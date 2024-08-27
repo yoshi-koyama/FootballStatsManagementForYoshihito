@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>国一覧</title>
+</head>
+<body>
+  <h1>国一覧</h1>
+  <ul>
+    <li th:each="country : ${countries}">
+      <span><a th:text="${country.name}" th:href="@{/leagues/{countryId}(countryId=${country.id})}"></a></span>
+    </li>
+  </ul>
+  <form th:action="@{/registerCountry}" th:object="${country}" method="post">
+    <input type="text" name="name" placeholder="国名" th:field="*{name}">
+    <button type="submit">登録</button>
+  </form>
+
+</body>
+</html>

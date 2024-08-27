@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>クラブ一覧</title>
+</head>
+<body>
+  <h2><a th:href="@{/leagues/{countryId}(countryId=${league.countryId})}">リーグ一覧</a></h2>
+  <h1><a th:href="@{/clubChoice/{leagueId}(leagueId=${league.id})}">試合結果登録</a></h1>
+  <h1 th:text="${league.name} + ' クラブ一覧'">クラブ一覧</h1>
+  <ul>
+    <li th:each="club : ${clubs}">
+      <span><a th:text="${club.name}" th:href="@{/players/{clubId}(clubId=${club.id})}"></a></span>
+    </li>
+  </ul>
+  <form th:action="@{/registerClub/{leagueId}(leagueId=${league.id})}" th:object="${club}" method="post">
+    <input type="text" name="name" placeholder="クラブ名" th:field="*{name}">
+    <button type="submit">登録</button>
+  </form>
+
+</body>
+</html>

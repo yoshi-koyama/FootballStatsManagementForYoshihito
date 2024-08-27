@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>選手一覧</title>
+</head>
+<body>
+  <h2><a th:href="@{/clubs/{leagueId}(leagueId=${club.leagueId})}">クラブ一覧</a></h2>
+  <h1 th:text="${club.name} + '選手一覧'">選手一覧</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>選手名</th>
+        <th>試合数</th>
+        <th>先発出場</th>
+        <th>途中出場</th>
+        <th>得点</th>
+        <th>アシスト</th>
+        <th>出場時間(min)</th>
+        <th>イエローカード</th>
+        <th>レッドカード</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="seasonStat : ${seasonStats}">
+        <td><a th:text="${seasonStat.player.name}" th:href="@{/player/{playerId}(playerId=${seasonStat.player.id})}"></a></td>
+        <td th:text="${seasonStat.games}"></td>
+        <td th:text="${seasonStat.starterGames}"></td>
+        <td th:text="${seasonStat.substituteGames}"></td>
+        <td th:text="${seasonStat.goals}"></td>
+        <td th:text="${seasonStat.assists}"></td>
+        <td th:text="${seasonStat.minutes}"></td>
+        <td th:text="${seasonStat.yellowCards}"></td>
+        <td th:text="${seasonStat.redCards}"></td>
+      </tr>
+    </tbody>
+  </table>
+  <form th:action="@{/registerPlayer/{clubId}(clubId=${club.id})}" th:object="${player}" method="post">
+    <input type="text" name="name" placeholder="選手名" th:field="*{name}">
+    <button type="submit">登録</button>
+  </form>
+
+</body>
+</html>

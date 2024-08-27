@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>選手詳細</title>
+  <style>
+    table {
+      width: 70%;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 5px;
+      text-align: center;
+    }
+
+    td input, td button {
+      width: 100%; /* 各セル内の要素を列の幅に合わせる */
+    }
+
+    /* 試合日列の幅を広くする */
+    .wide-column {
+        width: 150px; /* 必要に応じて幅を調整 */
+    }
+  </style>
+</head>
+<body>
+
+<h2><a th:href="@{/players/{clubId}(clubId=${player.clubId})}">選手一覧</a></h2>
+<h1 th:text="${player.name} + '成績詳細'">成績詳細</h1>
+<table>
+  <thead>
+  <tr>
+    <th class="wide-column">試合日</th>
+    <th>先発</th>
+    <th>得点</th>
+    <th>アシスト</th>
+    <th>プレイ時間(min)</th>
+    <th>イエローカード</th>
+    <th>レッドカード</th>
+    <th></th>
+  </tr>
+  </thead>
+  <tbody>
+  <!-- 新規登録用の行 -->
+  <tr>
+    <form th:action="@{/registerPlayerGameStat/{playerId}(playerId=${player.id})}" th:object="${newPlayerGameStat}" method="POST">
+      <td><input type="text" name="gameDate" placeholder="YYYYMMDD" /></td>
+      <td><input type="checkbox" name="starter" checked /></td>
+      <td><input type="number" name="goals" /></td>
+      <td><input type="number" name="assists" /></td>
+      <td><input type="number" name="minutes" /></td>
+      <td><input type="number" name="yellowCards" /></td>
+      <td><input type="number" name="redCards" /></td>
+      <td><button type="submit">登録</button></td>
+    </form>
+  </tr>
+
+  <!-- 既存のデータの行 -->
+  <tr th:each="playerGameStat : ${playerGameStats}">
+    <form th:action="@{/updatePlayerGameStat/{id}/{playerId}(id=${playerGameStat.id}, playerId=${player.id})}" th:object="${playerGameStat}" method="POST">
+      <td th:text="${playerGameStat.gameDate}">2020-06-01</td>
+      <td><input type="checkbox" name="starter" th:checked="${playerGameStat.starter}" /></td>
+      <td><input type="number" name="goals" th:value="${playerGameStat.goals}" /></td>
+      <td><input type="number" name="assists" th:value="${playerGameStat.assists}" /></td>
+      <td><input type="number" name="minutes" th:value="${playerGameStat.minutes}" /></td>
+      <td><input type="number" name="yellowCards" th:value="${playerGameStat.yellowCards}" /></td>
+      <td><input type="number" name="redCards" th:value="${playerGameStat.redCards}" /></td>
+      <td><button type="submit">更新</button></td>
+    </form>
+  </tr>
+  </tbody>
+</table>
+
+
+</body>
+
+</html>
