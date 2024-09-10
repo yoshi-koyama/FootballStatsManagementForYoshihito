@@ -1,6 +1,6 @@
-package football.StatsManagement.data;
+package football.StatsManagement.domain;
 
-import java.util.List;
+import football.StatsManagement.data.Player;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +8,10 @@ import lombok.Setter;
 @Setter
 public class PlayerSeasonStat {
   private Player player;
+
+  private int seasonId;
+  private int clubId;
+
   private int games;
   private int starterGames;
   private int substituteGames;

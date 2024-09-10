@@ -6,6 +6,7 @@ import football.StatsManagement.data.GameResult;
 import football.StatsManagement.data.League;
 import football.StatsManagement.data.Player;
 import football.StatsManagement.data.PlayerGameStat;
+import football.StatsManagement.data.Season;
 import java.util.List;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -40,6 +41,10 @@ public interface FootballRepository {
   @Options(useGeneratedKeys = true, keyProperty = "id")
   void insertGameResult(GameResult gameResult);
 
+  @Insert("INSERT INTO seasons (name, start_date, end_date) VALUES (#{name}, #{startDate}, #{endDate})")
+  @Options(useGeneratedKeys = true, keyProperty = "id")
+  void insertSeason(Season season);
+
 //  Select
   @Select("SELECT * FROM countries WHERE id = #{id}")
   Country selectCountry(int id);
@@ -56,6 +61,9 @@ public interface FootballRepository {
   @Select("SELECT * FROM player_game_stats WHERE id = #{id}")
   PlayerGameStat selectPlayerGameStat(int id);
 
+  @Select("SELECT * FROM game_results WHERE season_id = #{seasonId} AND (home_club_id = #{clubId} OR away_club_id = #{clubId})")
+  List<GameResult> selectGameResultsByClubAndSeason(int seasonId, int clubId);
+
   @Select("SELECT * FROM player_game_stats WHERE player_id = #{playerId}")
   List<PlayerGameStat> selectPlayerGameStatsByPlayer(int playerId);
 
@@ -70,6 +78,9 @@ public interface FootballRepository {
 
   @Select("SELECT * FROM countries")
   List<Country> selectCountries();
+
+  @Select("SELECT * FROM seasons")
+  List<Season> selectSeasons();
 
 //  update
   @Update("UPDATE players SET club_id = #{clubId}, name = #{name} WHERE id = #{id}")
