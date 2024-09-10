@@ -6,18 +6,34 @@ import football.StatsManagement.data.GameResult;
 import football.StatsManagement.data.League;
 import football.StatsManagement.data.Player;
 import football.StatsManagement.data.PlayerGameStat;
+import football.StatsManagement.data.Season;
+import football.StatsManagement.domain.GameResultForInsert;
+import football.StatsManagement.domain.GameResultWithPlayerStats;
+import football.StatsManagement.domain.PlayerFortInsert;
+import football.StatsManagement.domain.PlayerGameStatForInsert;
+import football.StatsManagement.domain.Standing;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@Validated
+@RestController
 public class FootballController {
   private FootballService service;
 
@@ -27,77 +43,75 @@ public class FootballController {
   }
 
   @GetMapping("/countries")
-  public String getCountries(Model model) {
-    model.addAttribute("countries", service.getCountries());
-    model.addAttribute("country", new Country());
-    return "countries";
+  public List<Country> getCountries() {
+    return service.getCountries();
   }
 
   @GetMapping("/leagues/{countryId}")
-  public String getLeagues(Model model, @PathVariable int countryId) {
-    model.addAttribute("country", service.getCountry(countryId));
-    model.addAttribute("leagues", service.getLeaguesByCountry(countryId));
-    model.addAttribute("league", new League());
-    return "leagues";
+  public List<League> getLeagues(@PathVariable @Positive int countryId) {
+    return service.getLeaguesByCountry(countryId);
   }
 
   @GetMapping("/clubs/{leagueId}")
-  public String getClubs(Model model, @PathVariable int leagueId) {
-    model.addAttribute("league", service.getLeague(leagueId));
-    model.addAttribute("clubs", service.getClubsByLeague(leagueId));
-    model.addAttribute("club", new Club());
-    return "clubs";
+  public List<Club> getClubs(@PathVariable @Positive int leagueId) {
+    return service.getClubsByLeague(leagueId);
+  }
+
+  @GetMapping("/standing/{leagueId}/{seasonId}")
+  public Standing getStanding(@PathVariable @Positive int leagueId, @PathVariable @Positive int seasonId) {
+    return Standing.initialStanding(leagueId, seasonId, service);
   }
 
   @GetMapping("/players/{clubId}")
-  public String getPlayers(Model model, @PathVariable int clubId) {
-    model.addAttribute("club", service.getClub(clubId));
-    model.addAttribute("seasonStats", service.playerSeasonStats(clubId));
-    model.addAttribute("player", new Player());
-    return "players";
+  public List<Player> getPlayers(@PathVariable @Positive int clubId) {
+    return service.getPlayersByClub(clubId);
   }
 
   @GetMapping("/player/{playerId}")
-  public String getPlayer(Model model, @PathVariable int playerId) {
-    model.addAttribute("player", service.getPlayer(playerId));
-    model.addAttribute("playerGameStats", service.getPlayerGameStatsByPlayer(playerId));
-    model.addAttribute("newPlayerGameStat", new PlayerGameStat());
-    return "player";
+  public Player getPlayer(@PathVariable @Positive int playerId) {
+    return service.getPlayer(playerId);
   }
 
   @PostMapping("/registerCountry")
-  public String registerCountry(@ModelAttribute Country country) {
+  public ResponseEntity<Country> registerCountry(@RequestParam @NotBlank String name) {
+    Country country = new Country(name);
     service.registerCountry(country);
-    return "redirect:/countries";
+
+    return ResponseEntity.ok().body(country);
   }
 
   @PostMapping("/registerLeague/{countryId}")
-  public String registerLeague(@ModelAttribute League league, @PathVariable int countryId) {
-    league.setCountryId(countryId);
+  public ResponseEntity<League> registerLeague(@PathVariable @Positive int countryId, @RequestParam @NotBlank String name) {
+    League league = new League(countryId, name);
     service.registerLeague(league);
-    return "redirect:/leagues/" + countryId;
+
+    return ResponseEntity.ok().body(league);
   }
 
   @PostMapping("/registerClub/{leagueId}")
-  public String registerClub(@ModelAttribute Club club, @PathVariable int leagueId) {
-    club.setLeagueId(leagueId);
+  public ResponseEntity<Club> registerClub(@PathVariable @Positive int leagueId, @RequestParam @NotBlank String name) {
+    Club club = new Club(leagueId, name);
     service.registerClub(club);
-    return "redirect:/clubs/" + leagueId;
+
+    return ResponseEntity.ok().body(club);
   }
 
   @PostMapping("/registerPlayer/{clubId}")
-  public String registerPlayer(@ModelAttribute Player player, @PathVariable int clubId) {
-    player.setClubId(clubId);
+  public ResponseEntity<Player> registerPlayer(@PathVariable @Positive int clubId, @RequestBody
+      PlayerFortInsert playerFortInsert) {
+    Player player = new Player(playerFortInsert);
     service.registerPlayer(player);
-    return "redirect:/players/" + clubId;
+
+    return ResponseEntity.ok().body(player);
   }
 
   @PostMapping("/registerPlayerGameStat/{playerId}")
-  public String registerPlayerGameStat(@ModelAttribute PlayerGameStat playerGameStat, @PathVariable int playerId) {
-    playerGameStat.setPlayerId(playerId);
+  public ResponseEntity<PlayerGameStat> registerPlayerGameStat(@PathVariable @Positive int playerId, @RequestBody PlayerGameStat playerGameStat) {
     playerGameStat.setClubId(service.getPlayer(playerId).getClubId());
+    playerGameStat.setNumber(service.getPlayer(playerId).getNumber());
     service.registerPlayerGameStat(playerGameStat);
-    return "redirect:/player/" + playerId;
+
+    return ResponseEntity.ok().body(playerGameStat);
   }
 
 //  @PostMapping("/updatePlayer/{playerId}")
@@ -105,49 +119,36 @@ public class FootballController {
 //    return "redirect:/player/" + playerId;
 //  }
 
-  @PostMapping("/updatePlayerGameStat/{id}/{playerId}")
-  public String updatePlayerGameStat(@ModelAttribute PlayerGameStat playerGameStat, @PathVariable int id, @PathVariable int playerId) {
-    playerGameStat.setId(id);
-    service.updatePlayerGameStat(playerGameStat);
-    return "redirect:/player/" + playerId;
+  @PostMapping("/registerGameResult/{leagueId}/{homeClubId}/{awayClubId}")
+  public ResponseEntity<GameResultWithPlayerStats> registerGameResult(
+      @RequestBody @Valid GameResultForInsert gameResultForInsert,
+      @RequestBody @Valid List<PlayerGameStatForInsert> homeClubStatsForInsert,
+      @RequestBody @Valid List<PlayerGameStatForInsert> awayClubStatsForInsert,
+      @PathVariable @Positive int leagueId, @PathVariable @Positive int homeClubId, @PathVariable @Positive int awayClubId)
+      throws FootballException {
+    GameResult gameResult = new GameResult(gameResultForInsert);
+    List<PlayerGameStat> homeClubStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForInsert);
+    List<PlayerGameStat> awayClubStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForInsert);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+
+    service.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats);
+
+    return ResponseEntity.ok().body(gameResultWithPlayerStats);
   }
 
-  @GetMapping("/clubChoice/{leagueId}")
-  public String chooseClubs(Model model, @PathVariable int leagueId) {
-    model.addAttribute("leagueId", leagueId);
-    model.addAttribute("clubs", service.getClubsByLeague(leagueId));
+  @PostMapping("/registerSeason")
+  public ResponseEntity<Season> registerSeason(@RequestBody @Valid Season season) throws FootballException {
+    service.registerSeason(season);
 
-    return "clubChoice";
+    return ResponseEntity.ok().body(season);
   }
 
-  @GetMapping("/gameResult/{leagueId}/{homeClubId}/{awayClubId}/{gameDate}")
-  public String gameResult(Model model, @PathVariable int leagueId, @PathVariable int homeClubId, @PathVariable int awayClubId, @PathVariable String gameDate) {
+  @PatchMapping("/updatePlayer/{playerId}")
+  public ResponseEntity<Player> updatePlayer(@PathVariable @Positive int playerId, @RequestBody Player player) {
+    service.updatePlayer(player);
 
-    model.addAttribute("leagueId", leagueId);
-    model.addAttribute("gameDate", gameDate);
-    model.addAttribute("homeClub", service.getClub(homeClubId));
-    model.addAttribute("awayClub", service.getClub(awayClubId));
-    GameResult gameResult = new GameResult();
-    gameResult.setHomeClubStats(service.convertClubIdToPlayerGameStats(homeClubId));
-    gameResult.setAwayClubStats(service.convertClubIdToPlayerGameStats(awayClubId));
-    model.addAttribute("gameResult", gameResult);
-
-    return "gameResult";
+    return ResponseEntity.ok().body(player);
   }
 
-  @PostMapping("/registerGameResult/{leagueId}/{homeClubId}/{awayClubId}/{gameDate}")
-  public String registerGameResult(@ModelAttribute GameResult gameResult, @PathVariable int leagueId, @PathVariable int homeClubId, @PathVariable int awayClubId, @PathVariable String gameDate) {
-//    試合結果を編集
-    System.out.println("GameResult: " + gameResult);
-    gameResult.setLeagueId(leagueId);
-    gameResult.setHomeClubId(homeClubId);
-    gameResult.setAwayClubId(awayClubId);
-    gameResult.setGameDate(service.convertStringToLocalDate(gameDate));
-
-//    登録処理
-    service.registerGameResultAndPlayerGameStats(gameResult);
-
-    return "redirect:/clubs/" + leagueId;
-  }
 
 }

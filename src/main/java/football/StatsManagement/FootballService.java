@@ -6,10 +6,12 @@ import football.StatsManagement.data.GameResult;
 import football.StatsManagement.data.League;
 import football.StatsManagement.data.Player;
 import football.StatsManagement.data.PlayerGameStat;
-import football.StatsManagement.data.PlayerSeasonStat;
+import football.StatsManagement.data.Season;
+import football.StatsManagement.domain.GameResultWithPlayerStats;
+import football.StatsManagement.domain.PlayerGameStatForInsert;
+import football.StatsManagement.domain.PlayerSeasonStat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,28 +28,54 @@ public class FootballService {
   }
 
 //  register
+  @Transactional
   public void registerCountry(Country country) {
     repository.insertCountry(country);
   }
 
+  @Transactional
   public void registerLeague(League league) {
     repository.insertLeague(league);
   }
 
+  @Transactional
   public void registerClub(Club club) {
     repository.insertClub(club);
   }
 
+  @Transactional
   public void registerPlayer(Player player) {
     repository.insertPlayer(player);
   }
 
+  @Transactional
   public void registerPlayerGameStat(PlayerGameStat playerGameStats) {
     repository.insertPlayerGameStat(playerGameStats);
   }
 
+  @Transactional
   public void registerGameResult(GameResult gameResult) {
     repository.insertGameResult(gameResult);
+  }
+
+  @Transactional
+  public void registerSeason(Season season) throws FootballException {
+    // startDateがendDateより後になっていないか確認
+    if (season.getStartDate().isAfter(season.getEndDate())) {
+      throw new FootballException("Start date should be before end date");
+    }
+    // 既存のシーズンと重複しないか確認
+    List<Season> seasons = repository.selectSeasons();
+    for (Season s : seasons) {
+      if (s.getName().equals(season.getName())) {
+        throw new FootballException("Season name is already used");
+      }
+      // 既存のシーズンと期間が重複しないか確認
+      if (season.getEndDate().isAfter(s.getStartDate()) || season.getStartDate().isBefore(s.getEndDate())) {
+        throw new FootballException("Season period is already used");
+      }
+    }
+    repository.insertSeason(season);
   }
 
 //  get
@@ -75,6 +103,10 @@ public class FootballService {
     return repository.selectPlayerGameStatsByPlayer(playerId);
   }
 
+  public List<GameResult> getGameResultsByClubAndSeason(int seasonId, int clubId) {
+    return repository.selectGameResultsByClubAndSeason(seasonId, clubId);
+  }
+
   public List<Player> getPlayersByClub(int clubId) {
     return repository.selectPlayersByClub(clubId);
   }
@@ -91,11 +123,17 @@ public class FootballService {
     return repository.selectCountries();
   }
 
+  public List<Season> getSeasons() {
+    return repository.selectSeasons();
+  }
+
 //  update
+  @Transactional
   public void updatePlayer(Player player) {
     repository.updatePlayer(player);
   }
 
+  @Transactional
   public void updatePlayerGameStat(PlayerGameStat playerGameStat) {
     repository.updatePlayerGameStat(playerGameStat);
   }
@@ -132,19 +170,6 @@ public class FootballService {
     return playerSeasonStats;
   }
 
-  public List<PlayerGameStat> convertClubIdToPlayerGameStats(int clubId) {
-    List<Player> players = repository.selectPlayersByClub(clubId);
-    List<PlayerGameStat> playerGameStats = new ArrayList<>();
-    for (Player player : players) {
-      PlayerGameStat stat = new PlayerGameStat();
-      stat.setPlayerId(player.getId());
-      stat.setPlayerName(player.getName());
-      stat.setClubId(clubId);
-      playerGameStats.add(stat);
-    }
-    return playerGameStats;
-  }
-
   public List<PlayerGameStat> playerGameStatsExceptAbsent(List<PlayerGameStat> playerGameStats) {
     List<PlayerGameStat> playerGameStatsExceptAbsent = new ArrayList<>();
     for (PlayerGameStat playerGameStat : playerGameStats) {
@@ -174,31 +199,38 @@ public class FootballService {
   }
 
   @Transactional
-  public void registerGameResultAndPlayerGameStats(GameResult gameResult) {
-//    出場なしの選手を除外
-    List<PlayerGameStat> homeClubStats = gameResult.getHomeClubStats();
-    List<PlayerGameStat> awayClubStats = gameResult.getAwayClubStats();
+  public void registerGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats) throws FootballException {
+    // GameResultのScoreとPlayerGameStatのScoreが一致しているか確認
+    int homeScore = gameResultWithPlayerStats.getGameResult().getHomeScore();
+    int awayScore = gameResultWithPlayerStats.getGameResult().getAwayScore();
+    int homeScoreCalculated = calculateScore(gameResultWithPlayerStats.getHomeClubStats());
+    int awayScoreCalculated = calculateScore(gameResultWithPlayerStats.getAwayClubStats());
+    if (homeScore != homeScoreCalculated || awayScore != awayScoreCalculated) {
+      throw new FootballException("Score is not correct");
+    }
 
-    homeClubStats = playerGameStatsExceptAbsent(homeClubStats);
-    awayClubStats = playerGameStatsExceptAbsent(awayClubStats);
-    //    試合結果を編集
-    int homeScore = calculateScore(homeClubStats);
-    int awayScore = calculateScore(awayClubStats);
-    gameResult.setHomeScore(homeScore);
-    gameResult.setAwayScore(awayScore);
+    // 勝者を設定
+    GameResult gameResult = gameResultWithPlayerStats.getGameResult();
     gameResult.setWinnerClubId(winnerClubId(homeScore, awayScore, gameResult.getHomeClubId(), gameResult.getAwayClubId()));
-
 
 //    試合結果を登録
     registerGameResult(gameResult);
 
-//    個人成績を登録（登録前に日付を設定）
+//    出場なしの選手を除外
+    List<PlayerGameStat> homeClubStats = gameResultWithPlayerStats.getHomeClubStats();
+    List<PlayerGameStat> awayClubStats = gameResultWithPlayerStats.getAwayClubStats();
+
+    homeClubStats = playerGameStatsExceptAbsent(homeClubStats);
+    awayClubStats = playerGameStatsExceptAbsent(awayClubStats);
+
+
+//    個人成績を登録（登録前にgameIdとclubIdとnumberを設定）
     for (PlayerGameStat playerGameStat : homeClubStats) {
-      playerGameStat.setGameDate(gameResult.getGameDate());
+      playerGameStat.setGameInfo(gameResult.getId(), gameResult.getHomeClubId(), repository.selectPlayer(playerGameStat.getPlayerId()).getNumber());
       registerPlayerGameStat(playerGameStat);
     }
     for (PlayerGameStat playerGameStat : awayClubStats) {
-      playerGameStat.setGameDate(gameResult.getGameDate());
+      playerGameStat.setGameInfo(gameResult.getId(), gameResult.getAwayClubId(), repository.selectPlayer(playerGameStat.getPlayerId()).getNumber());
       registerPlayerGameStat(playerGameStat);
     }
   }
@@ -207,5 +239,15 @@ public class FootballService {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
     LocalDate gameDate = LocalDate.parse(dateString, formatter);
     return gameDate;
+  }
+
+  // List<PlayerGameStatForInsert>をList<PlayerGameStat>に変換
+  public List<PlayerGameStat> convertPlayerGameStatsForInsertToPlayerGameStats(List<PlayerGameStatForInsert> playerGameStatsForInsert) {
+    List<PlayerGameStat> playerGameStats = new ArrayList<>();
+    for (PlayerGameStatForInsert playerGameStatForInsert : playerGameStatsForInsert) {
+      PlayerGameStat playerGameStat = new PlayerGameStat(playerGameStatForInsert);
+      playerGameStats.add(playerGameStat);
+    }
+    return playerGameStats;
   }
 }
