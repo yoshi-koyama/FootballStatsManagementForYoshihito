@@ -1,12 +1,11 @@
-package football.StatsManagement.domain;
+package football.StatsManagement.model.domain;
 
 import football.StatsManagement.FootballService;
-import football.StatsManagement.data.Club;
-import football.StatsManagement.data.GameResult;
+import football.StatsManagement.model.data.Club;
+import football.StatsManagement.model.data.GameResult;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Getter
 @Setter

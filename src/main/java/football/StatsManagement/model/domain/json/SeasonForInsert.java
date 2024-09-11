@@ -1,4 +1,4 @@
-package football.StatsManagement.domain;
+package football.StatsManagement.model.domain.json;
 
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;

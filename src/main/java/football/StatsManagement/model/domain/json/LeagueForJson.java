@@ -1,23 +1,18 @@
-package football.StatsManagement.domain;
+package football.StatsManagement.model.domain.json;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class PlayerFortInsert {
+public class LeagueForJson {
   @NotNull
-  private int clubId;
+  @Positive
+  private int countryId;
 
   @NotBlank
-  private String alphabetName;
-
-  @NotBlank
-  private String kanaName;
-
-  @NotNull
-  private int number;
-
+  private String name;
 }

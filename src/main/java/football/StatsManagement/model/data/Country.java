@@ -1,4 +1,4 @@
-package football.StatsManagement.data;
+package football.StatsManagement.model.data;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
