@@ -1,4 +1,4 @@
-package football.StatsManagement.domain;
+package football.StatsManagement.model.domain.json;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class PlayerGameStatForInsert {
+public class PlayerGameStatForJson {
   @NotNull
   private int playerId;
 

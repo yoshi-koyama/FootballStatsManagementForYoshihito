@@ -1,4 +1,4 @@
-package football.StatsManagement;
+package football.StatsManagement.exception_handler;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;

@@ -1,8 +1,6 @@
-package football.StatsManagement.data;
+package football.StatsManagement.model.data;
 
-import football.StatsManagement.domain.PlayerGameStatForInsert;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
+import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,18 +24,18 @@ public class PlayerGameStat {
   private int redCards;
 
   // @Insert用
-  public PlayerGameStat(PlayerGameStatForInsert playerGameStatForInsert) {
+  public PlayerGameStat(PlayerGameStatForJson playerGameStatForJson) {
     this.id = 0;
     this.gameId = 0; // この時点では不明
-    this.playerId = playerGameStatForInsert.getPlayerId();
+    this.playerId = playerGameStatForJson.getPlayerId();
     this.clubId = 0; // この時点では不明
     this.number = 0; // この時点では不明
-    this.starter = playerGameStatForInsert.isStarter();
-    this.goals = playerGameStatForInsert.getGoals();
-    this.assists = playerGameStatForInsert.getAssists();
-    this.minutes = playerGameStatForInsert.getMinutes();
-    this.yellowCards = playerGameStatForInsert.getYellowCards();
-    this.redCards = playerGameStatForInsert.getRedCards();
+    this.starter = playerGameStatForJson.isStarter();
+    this.goals = playerGameStatForJson.getGoals();
+    this.assists = playerGameStatForJson.getAssists();
+    this.minutes = playerGameStatForJson.getMinutes();
+    this.yellowCards = playerGameStatForJson.getYellowCards();
+    this.redCards = playerGameStatForJson.getRedCards();
   }
 
   public void setGameInfo(int gameId, int clubId, int number) {

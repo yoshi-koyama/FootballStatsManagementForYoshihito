@@ -1,9 +1,7 @@
-package football.StatsManagement.domain;
+package football.StatsManagement.model.domain;
 
-import football.StatsManagement.data.GameResult;
-import football.StatsManagement.data.PlayerGameStat;
-import jakarta.validation.Valid;
-import java.time.LocalDate;
+import football.StatsManagement.model.data.GameResult;
+import football.StatsManagement.model.data.PlayerGameStat;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

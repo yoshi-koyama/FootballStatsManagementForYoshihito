@@ -1,15 +1,16 @@
 package football.StatsManagement;
 
-import football.StatsManagement.data.Club;
-import football.StatsManagement.data.Country;
-import football.StatsManagement.data.GameResult;
-import football.StatsManagement.data.League;
-import football.StatsManagement.data.Player;
-import football.StatsManagement.data.PlayerGameStat;
-import football.StatsManagement.data.Season;
-import football.StatsManagement.domain.GameResultWithPlayerStats;
-import football.StatsManagement.domain.PlayerGameStatForInsert;
-import football.StatsManagement.domain.PlayerSeasonStat;
+import football.StatsManagement.exception_handler.FootballException;
+import football.StatsManagement.model.data.Club;
+import football.StatsManagement.model.data.Country;
+import football.StatsManagement.model.data.GameResult;
+import football.StatsManagement.model.data.League;
+import football.StatsManagement.model.data.Player;
+import football.StatsManagement.model.data.PlayerGameStat;
+import football.StatsManagement.model.data.Season;
+import football.StatsManagement.model.domain.GameResultWithPlayerStats;
+import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
+import football.StatsManagement.model.domain.PlayerSeasonStat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -242,10 +243,10 @@ public class FootballService {
   }
 
   // List<PlayerGameStatForInsert>をList<PlayerGameStat>に変換
-  public List<PlayerGameStat> convertPlayerGameStatsForInsertToPlayerGameStats(List<PlayerGameStatForInsert> playerGameStatsForInsert) {
+  public List<PlayerGameStat> convertPlayerGameStatsForInsertToPlayerGameStats(List<PlayerGameStatForJson> playerGameStatsForInsert) {
     List<PlayerGameStat> playerGameStats = new ArrayList<>();
-    for (PlayerGameStatForInsert playerGameStatForInsert : playerGameStatsForInsert) {
-      PlayerGameStat playerGameStat = new PlayerGameStat(playerGameStatForInsert);
+    for (PlayerGameStatForJson playerGameStatForJson : playerGameStatsForInsert) {
+      PlayerGameStat playerGameStat = new PlayerGameStat(playerGameStatForJson);
       playerGameStats.add(playerGameStat);
     }
     return playerGameStats;

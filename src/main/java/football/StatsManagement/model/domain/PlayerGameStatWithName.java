@@ -1,6 +1,6 @@
-package football.StatsManagement.domain;
+package football.StatsManagement.model.domain;
 
-import football.StatsManagement.data.PlayerGameStat;
+import football.StatsManagement.model.data.PlayerGameStat;
 import lombok.Getter;
 
 @Getter

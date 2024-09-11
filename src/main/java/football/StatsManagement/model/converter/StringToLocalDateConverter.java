@@ -1,4 +1,4 @@
-package football.StatsManagement.converter;
+package football.StatsManagement.model.converter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

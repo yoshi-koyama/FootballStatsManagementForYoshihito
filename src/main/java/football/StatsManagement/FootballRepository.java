@@ -1,12 +1,12 @@
 package football.StatsManagement;
 
-import football.StatsManagement.data.Club;
-import football.StatsManagement.data.Country;
-import football.StatsManagement.data.GameResult;
-import football.StatsManagement.data.League;
-import football.StatsManagement.data.Player;
-import football.StatsManagement.data.PlayerGameStat;
-import football.StatsManagement.data.Season;
+import football.StatsManagement.model.data.Club;
+import football.StatsManagement.model.data.Country;
+import football.StatsManagement.model.data.GameResult;
+import football.StatsManagement.model.data.League;
+import football.StatsManagement.model.data.Player;
+import football.StatsManagement.model.data.PlayerGameStat;
+import football.StatsManagement.model.data.Season;
 import java.util.List;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
