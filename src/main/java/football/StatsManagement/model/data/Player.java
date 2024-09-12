@@ -23,10 +23,7 @@ public class Player {
   private int clubId;
 
   @NotBlank
-  private String alphabetName;
-
-  @NotBlank
-  private String kanaName;
+  private String name;
 
   @NotNull
   @Positive
@@ -36,8 +33,7 @@ public class Player {
   public Player(PlayerForJson playerForJson) {
     this.id = 0;
     this.clubId = playerForJson.getClubId();
-    this.alphabetName = playerForJson.getAlphabetName();
-    this.kanaName = playerForJson.getKanaName();
+    this.name = playerForJson.getName();
     this.number = playerForJson.getNumber();
   }
 
