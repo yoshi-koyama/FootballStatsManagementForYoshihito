@@ -1,4 +1,4 @@
-package football.StatsManagement.exception_handler;
+package football.StatsManagement.exception;
 
 public class FootballException extends Exception {
 

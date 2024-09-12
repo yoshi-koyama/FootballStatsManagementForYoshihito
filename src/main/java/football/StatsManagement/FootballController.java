@@ -1,6 +1,6 @@
 package football.StatsManagement;
 
-import football.StatsManagement.exception_handler.FootballException;
+import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.Country;
 import football.StatsManagement.model.data.GameResult;
@@ -21,7 +21,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -109,6 +108,17 @@ public class FootballController {
   @GetMapping("/players/{playerId}")
   public Player getPlayer(@PathVariable @Positive int playerId) {
     return service.getPlayer(playerId);
+  }
+
+  /**
+   * 試合IDに紐づく試合結果の取得（選手成績を含む）
+   * @param gameId
+   * @return 試合結果
+   */
+  @Operation(summary = "試合結果の取得", description = "試合IDに紐づく試合結果を取得します")
+  @GetMapping("game-results/{gameId}")
+  public GameResult getGameResult(@PathVariable @Positive int gameId) {
+    return service.getGameResult(gameId);
   }
 
   /**

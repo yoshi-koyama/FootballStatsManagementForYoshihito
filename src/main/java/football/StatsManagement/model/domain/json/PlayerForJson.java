@@ -14,10 +14,7 @@ public class PlayerForJson {
   private int clubId;
 
   @NotBlank
-  private String alphabetName;
-
-  @NotBlank
-  private String kanaName;
+  private String name;
 
   @NotNull
   private int number;

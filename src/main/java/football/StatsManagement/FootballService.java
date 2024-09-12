@@ -1,6 +1,6 @@
 package football.StatsManagement;
 
-import football.StatsManagement.exception_handler.FootballException;
+import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.Country;
 import football.StatsManagement.model.data.GameResult;
@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,36 +30,64 @@ public class FootballService {
   }
 
 //  register
+  /**
+   * Register a country
+   * @param country
+   */
   @Transactional
   public void registerCountry(Country country) {
     repository.insertCountry(country);
   }
 
+  /**
+   * Register a league
+   * @param league
+   */
   @Transactional
   public void registerLeague(League league) {
     repository.insertLeague(league);
   }
 
+  /**
+   * Register a club
+   * @param club
+   */
   @Transactional
   public void registerClub(Club club) {
     repository.insertClub(club);
   }
 
+  /**
+   * Register a player
+   * @param player
+   */
   @Transactional
   public void registerPlayer(Player player) {
     repository.insertPlayer(player);
   }
 
+  /**
+   * Register a player game stat
+   * @param playerGameStats
+   */
   @Transactional
   public void registerPlayerGameStat(PlayerGameStat playerGameStats) {
     repository.insertPlayerGameStat(playerGameStats);
   }
 
+  /**
+   * Register a game result
+   * @param gameResult
+   */
   @Transactional
   public void registerGameResult(GameResult gameResult) {
     repository.insertGameResult(gameResult);
   }
 
+  /**
+   * Register a season
+   * @param season
+   */
   @Transactional
   public void registerSeason(Season season) throws FootballException {
     // startDateがendDateより後になっていないか確認
@@ -80,98 +109,217 @@ public class FootballService {
   }
 
 //  get
+  /**
+   * Get a country
+   * @param id
+   * @return a country
+   */
   public Country getCountry(int id) {
     return repository.selectCountry(id);
   }
 
+  /**
+   * Get a league
+   * @param id
+   * @return a league
+   */
   public League getLeague(int id) {
     return repository.selectLeague(id);
   }
 
+  /**
+   * Get a club
+   * @param id
+   * @return a club
+   */
   public Club getClub(int id) {
     return repository.selectClub(id);
   }
 
+  /**
+   * Get a player
+   * @param id
+   * @return a player
+   */
   public Player getPlayer(int id) {
     return repository.selectPlayer(id);
   }
 
+  /**
+   * Get a game result
+   * @param id
+   * @return a game result
+   */
+  public GameResult getGameResult(int id) {
+    return repository.selectGameResult(id);
+  }
+
+  /**
+   * Get a player game stat
+   * @param id
+   * @return a player game stat
+   */
   public PlayerGameStat getPlayerGameStat(int id) {
     return repository.selectPlayerGameStat(id);
   }
 
+  /**
+   * Get player game stats by player
+   * @param playerId
+   * @return
+   */
   public List<PlayerGameStat> getPlayerGameStatsByPlayer(int playerId) {
     return repository.selectPlayerGameStatsByPlayer(playerId);
   }
 
+  /**
+   * Get game results by league and season
+   * @param seasonId
+   * @param clubId
+   * @return
+   */
   public List<GameResult> getGameResultsByClubAndSeason(int seasonId, int clubId) {
     return repository.selectGameResultsByClubAndSeason(seasonId, clubId);
   }
 
+  /**
+   * Get players by club
+   * @param clubId
+   * @return players
+   */
   public List<Player> getPlayersByClub(int clubId) {
     return repository.selectPlayersByClub(clubId);
   }
 
+  /**
+   * Get clubs by league
+   * @param leagueId
+   * @return clubs
+   */
   public List<Club> getClubsByLeague(int leagueId) {
     return repository.selectClubsByLeague(leagueId);
   }
 
+  /**
+   * Get leagues by country
+   * @param countryId
+   * @return leagues
+   */
   public List<League> getLeaguesByCountry(int countryId) {
     return repository.selectLeaguesByCountry(countryId);
   }
 
+  /**
+   * Get countries
+   * @return countries
+   */
   public List<Country> getCountries() {
     return repository.selectCountries();
   }
 
+  /**
+   * Get seasons
+   * @return seasons
+   */
   public List<Season> getSeasons() {
     return repository.selectSeasons();
   }
 
 //  update
+
+  /**
+   * Update a player
+   * @param player
+   */
   @Transactional
   public void updatePlayer(Player player) {
     repository.updatePlayer(player);
   }
 
-  @Transactional
-  public void updatePlayerGameStat(PlayerGameStat playerGameStat) {
-    repository.updatePlayerGameStat(playerGameStat);
-  }
 
 //  other
-  public List<PlayerSeasonStat> playerSeasonStats(int clubId) {
+  /**
+   * Get player season stats
+   * @param clubId
+   * @param seasonId
+   * @return player season stats
+   */
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByClubId(int clubId, int seasonId) {
     List<Player> players = repository.selectPlayersByClub(clubId);
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
     for (Player player : players) {
-      PlayerSeasonStat playerSeasonStat = new PlayerSeasonStat();
-      playerSeasonStat.setPlayer(player);
-      playerSeasonStat.setGames(repository.selectPlayerGameStatsByPlayer(player.getId()).size());
-      playerSeasonStat.setStarterGames(0);
-      playerSeasonStat.setSubstituteGames(0);
-      playerSeasonStat.setGoals(0);
-      playerSeasonStat.setAssists(0);
-      playerSeasonStat.setMinutes(0);
-      playerSeasonStat.setYellowCards(0);
-      playerSeasonStat.setRedCards(0);
-      for (PlayerGameStat playerGameStat : repository.selectPlayerGameStatsByPlayer(player.getId())) {
-        playerSeasonStat.setGoals(playerSeasonStat.getGoals() + playerGameStat.getGoals());
-        playerSeasonStat.setAssists(playerSeasonStat.getAssists() + playerGameStat.getAssists());
-        playerSeasonStat.setMinutes(playerSeasonStat.getMinutes() + playerGameStat.getMinutes());
-        playerSeasonStat.setYellowCards(playerSeasonStat.getYellowCards() + playerGameStat.getYellowCards());
-        playerSeasonStat.setRedCards(playerSeasonStat.getRedCards() + playerGameStat.getRedCards());
-        if (playerGameStat.isStarter()) {
-          playerSeasonStat.setStarterGames(playerSeasonStat.getStarterGames() + 1);
-        } else {
-          playerSeasonStat.setSubstituteGames(playerSeasonStat.getSubstituteGames() + 1);
-        }
-      }
+      PlayerSeasonStat playerSeasonStat = getPlayerSeasonStatByPlayerId(player.getId(), seasonId);
       playerSeasonStats.add(playerSeasonStat);
     }
     return playerSeasonStats;
   }
 
-  public List<PlayerGameStat> playerGameStatsExceptAbsent(List<PlayerGameStat> playerGameStats) {
+  /**
+   * Get player season stat by player ID
+   * @param playerId
+   * @param seasonId
+   * @return player season stat
+   */
+  public PlayerSeasonStat getPlayerSeasonStatByPlayerId(int playerId, int seasonId) {
+    // playerIdに紐づくPlayerGameStatを取得し、seasonIdに紐づくものだけを抽出
+    Player player = repository.selectPlayer(playerId);
+    List<PlayerGameStat> playerGameStats = repository.selectPlayerGameStatsByPlayer(playerId);
+    List<GameResult> gameResultsInSeason = repository.selectGameResultsByClubAndSeason(seasonId, player.getClubId());
+    List<PlayerGameStat> playerGameStatsInSeason = playerGameStats.stream()
+        .filter(playerGameStat -> gameResultsInSeason.stream()
+            .anyMatch(gameResult -> playerGameStat.getGameId() == gameResult.getId()))
+        .collect(Collectors.toList());
+
+    // PlayerSeasonStatを作成し、PlayerGameStatsから集計
+    PlayerSeasonStat playerSeasonStat = new PlayerSeasonStat(player, seasonId, player.getClubId());
+    aggregatePlayerSeasonStat(playerSeasonStat, playerGameStatsInSeason);
+
+    return playerSeasonStat;
+  }
+
+  /**
+   * Get player season stats by player ID
+   * @param playerId
+   * @return player season stats
+   */
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByPlayerId(int playerId) {
+    List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
+    List<Season> seasons = repository.selectSeasons();
+    for (Season season : seasons) {
+      PlayerSeasonStat playerSeasonStat = getPlayerSeasonStatByPlayerId(playerId, season.getId());
+      if (playerSeasonStat != null) {
+        playerSeasonStats.add(playerSeasonStat);
+      }
+    }
+    return playerSeasonStats;
+  }
+
+  /**
+   * Aggregate player season stat
+   * @param playerSeasonStat
+   * @param playerGameStats
+   */
+  private void aggregatePlayerSeasonStat(PlayerSeasonStat playerSeasonStat, List<PlayerGameStat> playerGameStats) {
+    for (PlayerGameStat playerGameStat : playerGameStats) {
+      playerSeasonStat.setGoals(playerSeasonStat.getGoals() + playerGameStat.getGoals());
+      playerSeasonStat.setAssists(playerSeasonStat.getAssists() + playerGameStat.getAssists());
+      playerSeasonStat.setMinutes(playerSeasonStat.getMinutes() + playerGameStat.getMinutes());
+      playerSeasonStat.setYellowCards(playerSeasonStat.getYellowCards() + playerGameStat.getYellowCards());
+      playerSeasonStat.setRedCards(playerSeasonStat.getRedCards() + playerGameStat.getRedCards());
+      if (playerGameStat.isStarter()) {
+        playerSeasonStat.setStarterGames(playerSeasonStat.getStarterGames() + 1);
+      } else {
+        playerSeasonStat.setSubstituteGames(playerSeasonStat.getSubstituteGames() + 1);
+      }
+    }
+  }
+
+  /**
+   * Get player game stats except absent players
+   * @param playerGameStats
+   * @return player game stats except absent players
+   */
+  public List<PlayerGameStat> getPlayerGameStatsExceptAbsent(List<PlayerGameStat> playerGameStats) {
     List<PlayerGameStat> playerGameStatsExceptAbsent = new ArrayList<>();
     for (PlayerGameStat playerGameStat : playerGameStats) {
       if (playerGameStat.getMinutes() > 0) {
@@ -181,7 +329,12 @@ public class FootballService {
     return playerGameStatsExceptAbsent;
   }
 
-  public int calculateScore(List<PlayerGameStat> playerGameStats) {
+  /**
+   * Calculate score from player game stats
+   * @param playerGameStats
+   * @return score
+   */
+  public int getScoreByPlayerGameStats(List<PlayerGameStat> playerGameStats) {
     int score = 0;
     for (PlayerGameStat playerGameStat : playerGameStats) {
       score += playerGameStat.getGoals();
@@ -189,7 +342,15 @@ public class FootballService {
     return score;
   }
 
-  public int winnerClubId(int homeScore, int awayScore, int homeClubId, int awayClubId) {
+  /**
+   * Get winner club ID
+   * @param homeScore
+   * @param awayScore
+   * @param homeClubId
+   * @param awayClubId
+   * @return winner club ID
+   */
+  public int getWinnerClubId(int homeScore, int awayScore, int homeClubId, int awayClubId) {
     if (homeScore > awayScore) {
       return homeClubId;
     } else if (homeScore < awayScore) {
@@ -199,31 +360,29 @@ public class FootballService {
     }
   }
 
+  /**
+   * Register game result and player game stats
+   * @param gameResultWithPlayerStats
+   */
   @Transactional
   public void registerGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats) throws FootballException {
-    // GameResultのScoreとPlayerGameStatのScoreが一致しているか確認
-    int homeScore = gameResultWithPlayerStats.getGameResult().getHomeScore();
-    int awayScore = gameResultWithPlayerStats.getGameResult().getAwayScore();
-    int homeScoreCalculated = calculateScore(gameResultWithPlayerStats.getHomeClubStats());
-    int awayScoreCalculated = calculateScore(gameResultWithPlayerStats.getAwayClubStats());
-    if (homeScore != homeScoreCalculated || awayScore != awayScoreCalculated) {
-      throw new FootballException("Score is not correct");
-    }
-
-    // 勝者を設定
     GameResult gameResult = gameResultWithPlayerStats.getGameResult();
-    gameResult.setWinnerClubId(winnerClubId(homeScore, awayScore, gameResult.getHomeClubId(), gameResult.getAwayClubId()));
-
-//    試合結果を登録
-    registerGameResult(gameResult);
-
-//    出場なしの選手を除外
+    //    個人成績から出場なしの選手を除外
     List<PlayerGameStat> homeClubStats = gameResultWithPlayerStats.getHomeClubStats();
     List<PlayerGameStat> awayClubStats = gameResultWithPlayerStats.getAwayClubStats();
 
-    homeClubStats = playerGameStatsExceptAbsent(homeClubStats);
-    awayClubStats = playerGameStatsExceptAbsent(awayClubStats);
+    homeClubStats = getPlayerGameStatsExceptAbsent(homeClubStats);
+    awayClubStats = getPlayerGameStatsExceptAbsent(awayClubStats);
 
+    // スタッツの整合性を確認
+    confirmGameResultAndPlayerGameStats(gameResultWithPlayerStats, homeClubStats, awayClubStats);
+
+    // 勝者を設定
+    gameResult.setWinnerClubId(
+        getWinnerClubId(gameResult.getHomeScore(), gameResult.getAwayScore(), gameResult.getHomeClubId(), gameResult.getAwayClubId()));
+
+//    試合結果を登録
+    registerGameResult(gameResult);
 
 //    個人成績を登録（登録前にgameIdとclubIdとnumberを設定）
     for (PlayerGameStat playerGameStat : homeClubStats) {
@@ -236,13 +395,56 @@ public class FootballService {
     }
   }
 
+  /**
+   * Confirm game result and player game stats
+   * @param gameResultWithPlayerStats
+   * @param homeClubStats
+   * @param awayClubStats
+   * @throws FootballException
+   */
+  private void confirmGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats, List<PlayerGameStat> homeClubStats, List<PlayerGameStat> awayClubStats) throws FootballException {
+    // スコアが正しいか確認
+    int homeScore = gameResultWithPlayerStats.getGameResult().getHomeScore();
+    int awayScore = gameResultWithPlayerStats.getGameResult().getAwayScore();
+    int homeScoreCalculated = getScoreByPlayerGameStats(homeClubStats);
+    int awayScoreCalculated = getScoreByPlayerGameStats(awayClubStats);
+    if (homeScore != homeScoreCalculated) {
+      throw new FootballException("Home score is not correct");
+    }
+    if (awayScore != awayScoreCalculated) {
+      throw new FootballException("Away score is not correct");
+    }
+    // starterの人数確認
+    int homeStarterCount = (int) homeClubStats.stream().filter(PlayerGameStat::isStarter).count();
+    int awayStarterCount = (int) awayClubStats.stream().filter(PlayerGameStat::isStarter).count();
+    if (homeStarterCount != 11) {
+      throw new FootballException("Home starter count is not correct");
+    }
+    if (awayStarterCount != 11) {
+      throw new FootballException("Away starter count is not correct");
+    }
+    // 出場時間が合計990分か確認
+    int homeMinutes = homeClubStats.stream().mapToInt(PlayerGameStat::getMinutes).sum();
+    int awayMinutes = awayClubStats.stream().mapToInt(PlayerGameStat::getMinutes).sum();
+    if (homeMinutes != 990) {
+      throw new FootballException("Home minutes is not correct");
+    }
+    if (awayMinutes != 990) {
+      throw new FootballException("Away minutes is not correct");
+    }
+  }
+
   public LocalDate convertStringToLocalDate(String dateString) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
     LocalDate gameDate = LocalDate.parse(dateString, formatter);
     return gameDate;
   }
 
-  // List<PlayerGameStatForInsert>をList<PlayerGameStat>に変換
+  /**
+   * Convert player game stats for insert to player game stats
+   * @param playerGameStatsForInsert
+   * @return player game stats
+   */
   public List<PlayerGameStat> convertPlayerGameStatsForInsertToPlayerGameStats(List<PlayerGameStatForJson> playerGameStatsForInsert) {
     List<PlayerGameStat> playerGameStats = new ArrayList<>();
     for (PlayerGameStatForJson playerGameStatForJson : playerGameStatsForInsert) {
@@ -250,5 +452,16 @@ public class FootballService {
       playerGameStats.add(playerGameStat);
     }
     return playerGameStats;
+  }
+
+  public GameResultWithPlayerStats getGameResultWithPlayerStats(int gameId) {
+    GameResult gameResult = getGameResult(gameId);
+    List<PlayerGameStat> homeClubStats = getPlayerGameStatsByPlayer(gameResult.getHomeClubId()).stream()
+        .filter(playerGameStat -> playerGameStat.getGameId() == gameId)
+        .collect(Collectors.toList());
+    List<PlayerGameStat> awayClubStats = getPlayerGameStatsByPlayer(gameResult.getAwayClubId()).stream()
+        .filter(playerGameStat -> playerGameStat.getGameId() == gameId)
+        .collect(Collectors.toList());
+    return new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
   }
 }
