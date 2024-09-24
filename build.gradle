@@ -60,15 +60,18 @@ node {
 	download = true
 }
 
+// Reactアプリをビルドするタスク
 task buildReact(type: Exec) {
 	workingDir "$projectDir/react-app"
 	commandLine 'C:/Program Files/nodejs/npm.cmd', 'run', 'build'
 }
 
+// Reactのビルド結果をSpring Bootのstaticフォルダにコピーするタスク
 task copyToStatic(type: Copy) {
+	dependsOn buildReact // Reactのビルドが終わってからコピーを実行
 	from "$projectDir/react-app/build"
 	into "$projectDir/src/main/resources/static"
 }
 
-build.dependsOn buildReact, copyToStatic
+// パッケージング時にもReactのビルドとコピーが行われるように設定
 processResources.dependsOn copyToStatic
