@@ -2,6 +2,7 @@ package football.StatsManagement.model.domain.json;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -14,15 +15,15 @@ public class PlayerGameStatForJson {
   // 試合成績
   @NotNull
   private boolean starter;
-  @NotNull
+  @PositiveOrZero
   private int goals;
-  @NotNull
+  @PositiveOrZero
   private int assists;
-  @NotNull
+  @PositiveOrZero
   private int minutes;
-  @NotNull
+  @PositiveOrZero
   private int yellowCards;
-  @NotNull
+  @PositiveOrZero
   private int redCards;
 
   // minutesが0の場合はgoals, assists, yellowCards, redCardsも0でなければならない

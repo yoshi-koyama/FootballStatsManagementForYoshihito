@@ -11,34 +11,27 @@ import lombok.Getter;
 @AllArgsConstructor
 public class GameResultForJson {
 
-  @NotNull
   @Positive
   private int homeClubId;
 
-  @NotNull
   @Positive
   private int awayClubId;
 
-  @NotNull
   @PositiveOrZero
   private int homeScore;
 
-  @NotNull
   @PositiveOrZero
   private int awayScore;
 
-  @NotNull
   @PositiveOrZero
   private int winnerClubId; // 0 if draw
 
-  @NotNull
   @Positive
   private int leagueId;
 
   @NotNull
   private LocalDate gameDate;
 
-  @NotNull
   @Positive
   private int seasonId;
 }

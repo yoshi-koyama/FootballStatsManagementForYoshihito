@@ -46,7 +46,7 @@ public interface FootballRepository {
    * Insert a player
    * @param player
    */
-  @Insert("INSERT INTO players (name, club_id) VALUES (#{name}, #{clubId})")
+  @Insert("INSERT INTO players (number, name, club_id) VALUES (#{number}, #{name}, #{clubId})")
   @Options(useGeneratedKeys = true, keyProperty = "id")
   void insertPlayer(Player player);
 
