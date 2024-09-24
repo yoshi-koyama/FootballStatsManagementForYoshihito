@@ -9,7 +9,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class LeagueForJson {
-  @NotNull
   @Positive
   private int countryId;
 

@@ -44,6 +44,50 @@ public class FootballController {
   }
 
   /**
+   * 国IDに紐づく国の取得
+   * @param countryId
+   * @return 国
+   */
+  @Operation(summary = "国の取得", description = "国IDに紐づく国を取得します")
+  @GetMapping("/countries/{countryId}")
+  public Country getCountry(@PathVariable @Positive int countryId) {
+    return service.getCountry(countryId);
+  }
+
+  /**
+   * リーグIDに紐づくリーグの取得
+   * @param leagueId
+   * @return リーグ
+   */
+  @Operation(summary = "リーグの取得", description = "リーグIDに紐づくリーグを取得します")
+  @GetMapping("/leagues/{leagueId}")
+  public League getLeague(@PathVariable @Positive int leagueId) {
+    return service.getLeague(leagueId);
+  }
+
+  /**
+   * クラブIDに紐づくクラブの取得
+   * @param clubId
+   * @return クラブ
+   */
+  @Operation(summary = "クラブの取得", description = "クラブIDに紐づくクラブを取得します")
+  @GetMapping("/clubs/{clubId}")
+  public Club getClub(@PathVariable @Positive int clubId) {
+    return service.getClub(clubId);
+  }
+
+  /**
+   * 選手IDに紐づく選手の取得
+   * @param playerId
+   * @return 選手
+   */
+  @Operation(summary = "選手の取得", description = "選手IDに紐づく選手を取得します")
+  @GetMapping("/players/{playerId}")
+  public Player getPlayer(@PathVariable @Positive int playerId) {
+    return service.getPlayer(playerId);
+  }
+
+  /**
    * 国一覧の取得
    * @return 国一覧
    */
@@ -70,8 +114,8 @@ public class FootballController {
    * @return クラブ一覧
    */
   @Operation(summary = "クラブ一覧の取得", description = "リーグIDに紐づくクラブの一覧を取得します")
-  @GetMapping("/leagues/{leagueId}/clubs")
-  public List<Club> getClubs(@PathVariable @Positive int leagueId) {
+  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs")
+  public List<Club> getClubs(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId) {
     return service.getClubsByLeague(leagueId);
   }
 
@@ -94,8 +138,8 @@ public class FootballController {
    * @return 選手一覧
    */
   @Operation(summary = "選手一覧の取得", description = "クラブIDに紐づく選手の一覧を取得します")
-  @GetMapping("/clubs/{clubId}/players")
-  public List<Player> getPlayers(@PathVariable @Positive int clubId) {
+  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players")
+  public List<Player> getPlayers(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId) {
     return service.getPlayersByClub(clubId);
   }
 
@@ -105,8 +149,8 @@ public class FootballController {
    * @return 選手情報
    */
   @Operation(summary = "選手情報の取得", description = "選手IDに紐づく選手情報を取得します")
-  @GetMapping("/players/{playerId}")
-  public Player getPlayer(@PathVariable @Positive int playerId) {
+  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}")
+  public Player getPlayer(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId) {
     return service.getPlayer(playerId);
   }
 

@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import CountriesPage from './pages/CountriesPage.js';
-// import LeaguesPage from './pages/LeaguesPage';
+import LeaguesPage from './pages/LeaguesPage.js';
+import ClubsPage from './pages/ClubsPage.js';
+import PlayersPage from './pages/PlayersPage.js';
 
 function App() {
   return (
@@ -9,7 +11,11 @@ function App() {
       <Routes>
         <Route path="/" element={<CountriesPage />} />
         {/* 国IDに基づいてリーグページに遷移 */}
-        {/* <Route path="/countries/:countryId/leagues" element={<LeaguesPage />} /> */}
+        <Route path="/countries/:countryId/leagues" element={<LeaguesPage />} />
+        {/* リーグIDに基づいてクラブページに遷移 */}
+        <Route path="/countries/:countryId/leagues/:leagueId/clubs" element={<ClubsPage />} />
+        {/* クラブIDに基づいて選手ページに遷移 */}
+        <Route path="/countries/:countryId/leagues/:leagueId/clubs/:clubId/players" element={<PlayersPage />} />
       </Routes>
     </Router>
   );

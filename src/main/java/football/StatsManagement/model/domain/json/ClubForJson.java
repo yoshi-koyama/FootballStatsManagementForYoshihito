@@ -10,7 +10,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ClubForJson {
 
-  @NotNull
   @Positive
   private int leagueId;
 
