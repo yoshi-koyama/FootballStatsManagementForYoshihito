@@ -1,6 +1,6 @@
 package football.StatsManagement.model.domain;
 
-import football.StatsManagement.FootballService;
+import football.StatsManagement.service.FootballService;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.GameResult;
 import java.util.List;
@@ -10,6 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ClubForStanding {
+
+  private final List<GameResult> gameResults;
 
   private final Club club;
   private final int gamesPlayed;
@@ -21,10 +23,11 @@ public class ClubForStanding {
   private final int goalsAgainst;
   private final int goalDifference;
 
-  private int position;
+  private int position; // これのみsetterを持つ
 
   // 順位は後で設定するので、コンストラクタには含めない
-  public ClubForStanding(Club club, int gamesPlayed, int wins, int draws, int losses, int points, int goalsFor, int goalsAgainst, int goalDifference) {
+  public ClubForStanding(List<GameResult> gameResults, Club club, int gamesPlayed, int wins, int draws, int losses, int points, int goalsFor, int goalsAgainst, int goalDifference) {
+    this.gameResults = gameResults;
     this.club = club;
     this.gamesPlayed = gamesPlayed;
     this.wins = wins;
@@ -47,7 +50,7 @@ public class ClubForStanding {
     int goalsAgainst = getGoalsAgainst(gameResults, club.getId(), service);
     int goalDifference = goalsFor - goalsAgainst;
 
-    return new ClubForStanding(club, gamesPlayed, wins, draws, losses, points, goalsFor, goalsAgainst, goalDifference);
+    return new ClubForStanding(gameResults, club, gamesPlayed, wins, draws, losses, points, goalsFor, goalsAgainst, goalDifference);
   }
 
   private static int getWins(List<GameResult> gameResults, int clubId, FootballService service) {

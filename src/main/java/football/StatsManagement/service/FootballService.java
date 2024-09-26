@@ -1,4 +1,4 @@
-package football.StatsManagement;
+package football.StatsManagement.service;
 
 import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Club;
@@ -11,6 +11,7 @@ import football.StatsManagement.model.data.Season;
 import football.StatsManagement.model.domain.GameResultWithPlayerStats;
 import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
 import football.StatsManagement.model.domain.PlayerSeasonStat;
+import football.StatsManagement.repository.FootballRepository;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -238,6 +239,16 @@ public class FootballService {
 
 
 //  other
+  public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) {
+    List<PlayerGameStat> playerGameStats = getPlayerGameStatsByPlayer(playerId);
+    List<GameResult> gameResultsInSeason = repository.selectGameResultsByClubAndSeason(seasonId, repository.selectPlayer(playerId).getClubId());
+    List<PlayerGameStat> playerGameStatsInSeason = playerGameStats.stream()
+        .filter(playerGameStat -> gameResultsInSeason.stream()
+            .anyMatch(gameResult -> playerGameStat.getGameId() == gameResult.getId()))
+        .collect(Collectors.toList());
+    return playerGameStatsInSeason;
+  }
+
   /**
    * Get player season stats
    * @param clubId
@@ -263,12 +274,7 @@ public class FootballService {
   public PlayerSeasonStat getPlayerSeasonStatByPlayerId(int playerId, int seasonId) {
     // playerIdに紐づくPlayerGameStatを取得し、seasonIdに紐づくものだけを抽出
     Player player = repository.selectPlayer(playerId);
-    List<PlayerGameStat> playerGameStats = repository.selectPlayerGameStatsByPlayer(playerId);
-    List<GameResult> gameResultsInSeason = repository.selectGameResultsByClubAndSeason(seasonId, player.getClubId());
-    List<PlayerGameStat> playerGameStatsInSeason = playerGameStats.stream()
-        .filter(playerGameStat -> gameResultsInSeason.stream()
-            .anyMatch(gameResult -> playerGameStat.getGameId() == gameResult.getId()))
-        .collect(Collectors.toList());
+    List<PlayerGameStat> playerGameStatsInSeason = getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
 
     // PlayerSeasonStatを作成し、PlayerGameStatsから集計
     PlayerSeasonStat playerSeasonStat = new PlayerSeasonStat(player, seasonId, player.getClubId());

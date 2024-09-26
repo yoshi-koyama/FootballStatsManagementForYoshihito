@@ -1,4 +1,4 @@
-package football.StatsManagement;
+package football.StatsManagement.repository;
 
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.Country;
