@@ -1,5 +1,6 @@
-package football.StatsManagement;
+package football.StatsManagement.controller;
 
+import football.StatsManagement.service.FootballService;
 import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.Country;
@@ -8,6 +9,7 @@ import football.StatsManagement.model.data.League;
 import football.StatsManagement.model.data.Player;
 import football.StatsManagement.model.data.PlayerGameStat;
 import football.StatsManagement.model.data.Season;
+import football.StatsManagement.model.domain.PlayerSeasonStat;
 import football.StatsManagement.model.domain.json.ClubForJson;
 import football.StatsManagement.model.domain.json.GameResultForJson;
 import football.StatsManagement.model.domain.GameResultWithPlayerStats;
@@ -110,6 +112,7 @@ public class FootballController {
 
   /**
    * リーグIDに紐づくクラブ一覧の取得
+   * @param countryId
    * @param leagueId
    * @return クラブ一覧
    */
@@ -121,19 +124,22 @@ public class FootballController {
 
   /**
    * リーグIDとシーズンIDに紐づく順位表の取得
+   * @param countryId
    * @param leagueId
    * @param seasonId
    * @return 順位表
    */
   // TODO: seasonIdの取得方法を検討（@RequestParamで取得するか、@PathVariableで取得するか）
   @Operation(summary = "順位表の取得", description = "リーグIDとシーズンIDに紐づく順位表を取得します")
-  @GetMapping("leagues/{leagueId}/standings/{seasonId}")
-  public Standing getStanding(@PathVariable @Positive int leagueId, @PathVariable @Positive int seasonId) {
+  @GetMapping("/countries/{countryId}/leagues/{leagueId}/standings/{seasonId}")
+  public Standing getStanding(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int seasonId) {
     return Standing.initialStanding(leagueId, seasonId, service);
   }
 
   /**
    * クラブIDに紐づく選手一覧の取得
+   * @param countryId
+   * @param leagueId
    * @param clubId
    * @return 選手一覧
    */
@@ -145,6 +151,9 @@ public class FootballController {
 
   /**
    * 選手IDに紐づく選手情報の取得
+   * @param countryId
+   * @param leagueId
+   * @param clubId
    * @param playerId
    * @return 選手情報
    */
@@ -153,6 +162,64 @@ public class FootballController {
   public Player getPlayer(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId) {
     return service.getPlayer(playerId);
   }
+
+  /**
+   * 選手IDとシーズンIDに紐づく選手成績の取得
+   * @param countryId
+   * @param leagueId
+   * @param clubId
+   * @param playerId
+   * @param seasonId
+   * @return 選手の試合成績リスト
+   */
+  @Operation(summary = "選手成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
+  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}/player-game-stats/{seasonId}")
+  public List<PlayerGameStat> getPlayerGameStats(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId, @PathVariable @Positive int seasonId) {
+    return service.getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
+  }
+
+  /**
+   * クラブIDとシーズンIDに紐づく選手成績の取得
+   * @param countryId
+   * @param leagueId
+   * @param clubId
+   * @param seasonId
+   * @return 選手のシーズン成績リスト
+   */
+  @Operation(summary = "クラブ所属選手シーズン成績の取得", description = "クラブIDとシーズンIDに紐づく選手シーズン成績を取得します")
+  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players-season-stats/{seasonId}")
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByClubId(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int seasonId) {
+    return service.getPlayerSeasonStatsByClubId(clubId, seasonId);
+  }
+
+  /**
+   * 選手IDとシーズンIDに紐づく選手成績の取得
+   * @param countryId
+   * @param leagueId
+   * @param clubId
+   * @param playerId
+   * @param seasonId
+   * @return 選手のシーズン成績
+   */
+  @Operation(summary = "選手成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
+  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}/player-season-stat/{seasonId}")
+  public PlayerSeasonStat getPlayerSeasonStat(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId, @PathVariable @Positive int seasonId) {
+    return service.getPlayerSeasonStatByPlayerId(playerId, seasonId);
+  }
+
+  /**
+   * 選手IDに紐づく通算成績の取得
+   * @param countryId
+   * @param leagueId
+   * @param clubId
+   * @param playerId
+   * @return 選手のシーズン成績リスト
+   */
+  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}/player-season-stats")
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByPlayerId(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId) {
+    return service.getPlayerSeasonStatsByPlayerId(playerId);
+  }
+
 
   /**
    * 試合IDに紐づく試合結果の取得（選手成績を含む）
