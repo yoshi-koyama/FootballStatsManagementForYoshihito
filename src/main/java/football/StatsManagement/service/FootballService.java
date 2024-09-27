@@ -1,6 +1,7 @@
 package football.StatsManagement.service;
 
 import football.StatsManagement.exception.FootballException;
+import football.StatsManagement.exception.ResourceNotFoundException;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.Country;
 import football.StatsManagement.model.data.GameResult;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,7 +65,14 @@ public class FootballService {
    * @param player
    */
   @Transactional
-  public void registerPlayer(Player player) {
+  public void registerPlayer(Player player) throws FootballException {
+    // numberが重複していないか確認
+    List<Player> players = getPlayersByClub(player.getClubId());
+    for (Player p : players) {
+      if (p.getNumber() == player.getNumber()) {
+        throw new FootballException("Player number is already used");
+      }
+    }
     repository.insertPlayer(player);
   }
 
@@ -96,7 +105,7 @@ public class FootballService {
       throw new FootballException("Start date should be before end date");
     }
     // 既存のシーズンと重複しないか確認
-    List<Season> seasons = repository.selectSeasons();
+    List<Season> seasons = getSeasons();
     for (Season s : seasons) {
       if (s.getName().equals(season.getName())) {
         throw new FootballException("Season name is already used");
@@ -106,6 +115,7 @@ public class FootballService {
         throw new FootballException("Season period is already used");
       }
     }
+    updateSeasonsCurrentFalse();
     repository.insertSeason(season);
   }
 
@@ -115,8 +125,9 @@ public class FootballService {
    * @param id
    * @return a country
    */
-  public Country getCountry(int id) {
-    return repository.selectCountry(id);
+  public Country getCountry(int id) throws ResourceNotFoundException {
+    return repository.selectCountry(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Country not found"));
   }
 
   /**
@@ -124,8 +135,9 @@ public class FootballService {
    * @param id
    * @return a league
    */
-  public League getLeague(int id) {
-    return repository.selectLeague(id);
+  public League getLeague(int id) throws ResourceNotFoundException {
+    return repository.selectLeague(id)
+        .orElseThrow(() -> new ResourceNotFoundException("League not found"));
   }
 
   /**
@@ -133,8 +145,9 @@ public class FootballService {
    * @param id
    * @return a club
    */
-  public Club getClub(int id) {
-    return repository.selectClub(id);
+  public Club getClub(int id) throws ResourceNotFoundException {
+    return repository.selectClub(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Club not found"));
   }
 
   /**
@@ -142,8 +155,9 @@ public class FootballService {
    * @param id
    * @return a player
    */
-  public Player getPlayer(int id) {
-    return repository.selectPlayer(id);
+  public Player getPlayer(int id) throws ResourceNotFoundException {
+    return repository.selectPlayer(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
   }
 
   /**
@@ -151,8 +165,9 @@ public class FootballService {
    * @param id
    * @return a game result
    */
-  public GameResult getGameResult(int id) {
-    return repository.selectGameResult(id);
+  public GameResult getGameResult(int id) throws ResourceNotFoundException {
+    return repository.selectGameResult(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Game result not found"));
   }
 
   /**
@@ -160,8 +175,9 @@ public class FootballService {
    * @param id
    * @return a player game stat
    */
-  public PlayerGameStat getPlayerGameStat(int id) {
-    return repository.selectPlayerGameStat(id);
+  public PlayerGameStat getPlayerGameStat(int id) throws ResourceNotFoundException {
+    return repository.selectPlayerGameStat(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Player game stat not found"));
   }
 
   /**
@@ -233,15 +249,35 @@ public class FootballService {
    * @param player
    */
   @Transactional
-  public void updatePlayer(Player player) {
+  public void updatePlayer(Player player) throws FootballException, ResourceNotFoundException {
+    // numberが重複していないか確認
+    List<Player> players = getPlayersByClub(player.getClubId());
+    for (Player p : players) {
+      if (p.getNumber() == player.getNumber() && p.getId() != player.getId()) {
+        throw new FootballException("Player number is already used");
+      }
+    }
+    // playerが存在するか確認
+    Player targettedPlayer = getPlayer(player.getId());
+    if (targettedPlayer == null) {
+      throw new ResourceNotFoundException("Player not found");
+    }
     repository.updatePlayer(player);
   }
 
+  /**
+   * Update seasons current false
+   * 新シーズン登録前に使用
+   */
+  @Transactional
+  public void updateSeasonsCurrentFalse() {
+    repository.updateSeasonsCurrentFalse();
+  }
 
 //  other
-  public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) {
+  public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) throws ResourceNotFoundException {
     List<PlayerGameStat> playerGameStats = getPlayerGameStatsByPlayer(playerId);
-    List<GameResult> gameResultsInSeason = repository.selectGameResultsByClubAndSeason(seasonId, repository.selectPlayer(playerId).getClubId());
+    List<GameResult> gameResultsInSeason = getGameResultsByClubAndSeason(seasonId, getPlayer(playerId).getClubId());
     List<PlayerGameStat> playerGameStatsInSeason = playerGameStats.stream()
         .filter(playerGameStat -> gameResultsInSeason.stream()
             .anyMatch(gameResult -> playerGameStat.getGameId() == gameResult.getId()))
@@ -255,8 +291,8 @@ public class FootballService {
    * @param seasonId
    * @return player season stats
    */
-  public List<PlayerSeasonStat> getPlayerSeasonStatsByClubId(int clubId, int seasonId) {
-    List<Player> players = repository.selectPlayersByClub(clubId);
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByClubId(int clubId, int seasonId) throws ResourceNotFoundException {
+    List<Player> players = getPlayersByClub(clubId);
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
     for (Player player : players) {
       PlayerSeasonStat playerSeasonStat = getPlayerSeasonStatByPlayerId(player.getId(), seasonId);
@@ -271,9 +307,9 @@ public class FootballService {
    * @param seasonId
    * @return player season stat
    */
-  public PlayerSeasonStat getPlayerSeasonStatByPlayerId(int playerId, int seasonId) {
+  public PlayerSeasonStat getPlayerSeasonStatByPlayerId(int playerId, int seasonId) throws ResourceNotFoundException {
     // playerIdに紐づくPlayerGameStatを取得し、seasonIdに紐づくものだけを抽出
-    Player player = repository.selectPlayer(playerId);
+    Player player = getPlayer(playerId);
     List<PlayerGameStat> playerGameStatsInSeason = getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
 
     // PlayerSeasonStatを作成し、PlayerGameStatsから集計
@@ -288,9 +324,9 @@ public class FootballService {
    * @param playerId
    * @return player season stats
    */
-  public List<PlayerSeasonStat> getPlayerSeasonStatsByPlayerId(int playerId) {
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByPlayerId(int playerId) throws ResourceNotFoundException {
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
-    List<Season> seasons = repository.selectSeasons();
+    List<Season> seasons = getSeasons();
     for (Season season : seasons) {
       PlayerSeasonStat playerSeasonStat = getPlayerSeasonStatByPlayerId(playerId, season.getId());
       if (playerSeasonStat != null) {
@@ -371,7 +407,8 @@ public class FootballService {
    * @param gameResultWithPlayerStats
    */
   @Transactional
-  public void registerGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats) throws FootballException {
+  public void registerGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats)
+      throws FootballException, ResourceNotFoundException {
     GameResult gameResult = gameResultWithPlayerStats.getGameResult();
     //    個人成績から出場なしの選手を除外
     List<PlayerGameStat> homeClubStats = gameResultWithPlayerStats.getHomeClubStats();
@@ -392,11 +429,11 @@ public class FootballService {
 
 //    個人成績を登録（登録前にgameIdとclubIdとnumberを設定）
     for (PlayerGameStat playerGameStat : homeClubStats) {
-      playerGameStat.setGameInfo(gameResult.getId(), gameResult.getHomeClubId(), repository.selectPlayer(playerGameStat.getPlayerId()).getNumber());
+      playerGameStat.setGameInfo(gameResult.getId(), gameResult.getHomeClubId(), getPlayer(playerGameStat.getPlayerId()).getNumber());
       registerPlayerGameStat(playerGameStat);
     }
     for (PlayerGameStat playerGameStat : awayClubStats) {
-      playerGameStat.setGameInfo(gameResult.getId(), gameResult.getAwayClubId(), repository.selectPlayer(playerGameStat.getPlayerId()).getNumber());
+      playerGameStat.setGameInfo(gameResult.getId(), gameResult.getAwayClubId(), getPlayer(playerGameStat.getPlayerId()).getNumber());
       registerPlayerGameStat(playerGameStat);
     }
   }
@@ -460,7 +497,7 @@ public class FootballService {
     return playerGameStats;
   }
 
-  public GameResultWithPlayerStats getGameResultWithPlayerStats(int gameId) {
+  public GameResultWithPlayerStats getGameResultWithPlayerStats(int gameId) throws ResourceNotFoundException {
     GameResult gameResult = getGameResult(gameId);
     List<PlayerGameStat> homeClubStats = getPlayerGameStatsByPlayer(gameResult.getHomeClubId()).stream()
         .filter(playerGameStat -> playerGameStat.getGameId() == gameId)

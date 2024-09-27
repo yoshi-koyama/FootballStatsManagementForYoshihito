@@ -45,7 +45,10 @@ dependencies {
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
 
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+//	テスト
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -75,3 +78,5 @@ task copyToStatic(type: Copy) {
 
 // パッケージング時にもReactのビルドとコピーが行われるように設定
 processResources.dependsOn copyToStatic
+
+

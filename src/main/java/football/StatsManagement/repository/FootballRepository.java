@@ -8,6 +8,7 @@ import football.StatsManagement.model.data.Player;
 import football.StatsManagement.model.data.PlayerGameStat;
 import football.StatsManagement.model.data.Season;
 import java.util.List;
+import java.util.Optional;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -81,7 +82,7 @@ public interface FootballRepository {
    * @return
    */
   @Select("SELECT * FROM countries WHERE id = #{id}")
-  Country selectCountry(int id);
+  Optional<Country> selectCountry(int id);
 
   /**
    * Select a league
@@ -89,7 +90,7 @@ public interface FootballRepository {
    * @return
    */
   @Select("SELECT * FROM leagues WHERE id = #{id}")
-  League selectLeague(int id);
+  Optional<League> selectLeague(int id);
 
   /**
    * Select a club
@@ -97,7 +98,7 @@ public interface FootballRepository {
    * @return
    */
   @Select("SELECT * FROM clubs WHERE id = #{id}")
-  Club selectClub(int id);
+  Optional<Club> selectClub(int id);
 
   /**
    * Select a player
@@ -105,7 +106,7 @@ public interface FootballRepository {
    * @return
    */
   @Select("SELECT * FROM players WHERE id = #{id}")
-  Player selectPlayer(int id);
+  Optional<Player> selectPlayer(int id);
 
   /**
    * Select a player game stat
@@ -113,7 +114,7 @@ public interface FootballRepository {
    * @return
    */
   @Select("SELECT * FROM player_game_stats WHERE id = #{id}")
-  PlayerGameStat selectPlayerGameStat(int id);
+  Optional<PlayerGameStat> selectPlayerGameStat(int id);
 
   /**
    * Select game results by league and season
@@ -130,7 +131,7 @@ public interface FootballRepository {
    * @return
    */
   @Select("SELECT * FROM game_results WHERE id = #{id}")
-  GameResult selectGameResult(int id);
+  Optional<GameResult> selectGameResult(int id);
 
   /**
    * Select player game stats by player
@@ -185,5 +186,11 @@ public interface FootballRepository {
    */
   @Update("UPDATE players SET club_id = #{clubId}, name = #{name} WHERE id = #{id}")
   void updatePlayer(Player player);
+
+  /**
+   * 全てのシーズンのcurrentをfalseにする
+   */
+  @Update("UPDATE seasons SET current = false")
+  void updateSeasonsCurrentFalse();
 
 }
