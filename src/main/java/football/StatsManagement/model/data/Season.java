@@ -14,6 +14,7 @@ public class Season {
   private String name;
   private LocalDate startDate;
   private LocalDate endDate;
+  private boolean current;
 
   // @Insert用
   public Season(SeasonForJson seasonForJson) {
@@ -21,5 +22,6 @@ public class Season {
     this.name = seasonForJson.getName();
     this.startDate = seasonForJson.getStartDate();
     this.endDate = seasonForJson.getEndDate();
+    this.current = true;
   }
 }
