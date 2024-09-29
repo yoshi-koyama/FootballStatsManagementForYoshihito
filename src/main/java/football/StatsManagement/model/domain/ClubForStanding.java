@@ -42,18 +42,19 @@ public class ClubForStanding {
   public static ClubForStanding initialClubForStanding (int seasonId, Club club, FootballService service) {
     List<GameResult> gameResults = service.getGameResultsByClubAndSeason(seasonId, club.getId());
     int gamesPlayed = gameResults.size();
-    int wins = getWins(gameResults, club.getId(), service);
-    int draws = getDraws(gameResults, club.getId());
+    int wins = getWins(gameResults, club.getId());
+    int draws = getDraws(gameResults);
     int losses = gamesPlayed - wins - draws;
     int points = wins * 3 + draws;
-    int goalsFor = getGoalsFor(gameResults, club.getId(), service);
-    int goalsAgainst = getGoalsAgainst(gameResults, club.getId(), service);
+    int goalsFor = getGoalsFor(gameResults, club.getId());
+    int goalsAgainst = getGoalsAgainst(gameResults, club.getId());
     int goalDifference = goalsFor - goalsAgainst;
 
     return new ClubForStanding(gameResults, club, gamesPlayed, wins, draws, losses, points, goalsFor, goalsAgainst, goalDifference);
   }
 
-  private static int getWins(List<GameResult> gameResults, int clubId, FootballService service) {
+  // コンストラクタ用の値を取得するメソッド
+  private static int getWins(List<GameResult> gameResults, int clubId) {
     int wins = 0;
     for (GameResult gameResult : gameResults) {
       wins += gameResult.getWinnerClubId() == clubId ? 1 : 0;
@@ -61,7 +62,7 @@ public class ClubForStanding {
     return wins;
   }
 
-  private static int getDraws(List<GameResult> gameResults, int clubId) {
+  private static int getDraws(List<GameResult> gameResults) {
     int draws = 0;
     for (GameResult gameResult : gameResults) {
       draws += gameResult.getWinnerClubId() == 0 ? 1 : 0;
@@ -69,7 +70,7 @@ public class ClubForStanding {
     return draws;
   }
 
-  private static int getGoalsFor(List<GameResult> gameResults, int clubId, FootballService service) {
+  private static int getGoalsFor(List<GameResult> gameResults, int clubId) {
     int goalsFor = 0;
     for (GameResult gameResult : gameResults) {
       goalsFor += gameResult.getHomeClubId() == clubId ? gameResult.getHomeScore() : 0;
@@ -78,12 +79,58 @@ public class ClubForStanding {
     return goalsFor;
   }
 
-  private static int getGoalsAgainst(List<GameResult> gameResults, int clubId, FootballService service) {
+  private static int getGoalsAgainst(List<GameResult> gameResults, int clubId) {
     int goalsAgainst = 0;
     for (GameResult gameResult : gameResults) {
       goalsAgainst += gameResult.getHomeClubId() == clubId ? gameResult.getAwayScore() : 0;
       goalsAgainst += gameResult.getAwayClubId() == clubId ? gameResult.getHomeScore() : 0;
     }
     return goalsAgainst;
+  }
+
+  // 2クラブ間の成績比較のためのメソッド
+  public int getPointsAgainst(ClubForStanding clubAgainst) {
+    List<GameResult> gameResults = this.getGameResults().stream()
+        .filter(gameResult -> gameResult.getHomeClubId() == clubAgainst.getClub().getId() || gameResult.getAwayClubId() == clubAgainst.getClub().getId())
+        .toList();
+    int pointsAgainst = 0;
+    for (GameResult gameResult : gameResults) {
+      if (gameResult.getWinnerClubId() == this.getClub().getId()) {
+        pointsAgainst += 3;
+      } else if (gameResult.getWinnerClubId() == 0) {
+        pointsAgainst += 1;
+      }
+    }
+    return pointsAgainst;
+  }
+
+  public int getGoalDifferencesAgainst(ClubForStanding clubAgainst) {
+    int differencesAgainst = 0;
+    for (GameResult gameResult : this.getGameResults()) {
+      if (gameResult.getHomeClubId() == clubAgainst.getClub().getId()) {
+        differencesAgainst += gameResult.getAwayScore() - gameResult.getHomeScore();
+      } else if (gameResult.getAwayClubId() == clubAgainst.getClub().getId()) {
+        differencesAgainst += gameResult.getHomeScore() - gameResult.getAwayScore();
+      }
+    }
+    return differencesAgainst;
+  }
+
+  public int getAwayGoalsAgainst(ClubForStanding clubAgainst) {
+    int awayGoalsAgainst = 0;
+    for (GameResult gameResult : this.getGameResults()) {
+      if (gameResult.getHomeClubId() == clubAgainst.getClub().getId()) {
+        awayGoalsAgainst += gameResult.getAwayScore();
+      } else if (gameResult.getAwayClubId() == clubAgainst.getClub().getId()) {
+        awayGoalsAgainst += gameResult.getHomeScore();
+      }
+    }
+    return awayGoalsAgainst;
+  }
+
+  public int getGamesAgainst(ClubForStanding clubAgainst) {
+    return (int) this.getGameResults().stream()
+        .filter(gameResult -> gameResult.getHomeClubId() == clubAgainst.getClub().getId() || gameResult.getAwayClubId() == clubAgainst.getClub().getId())
+        .count();
   }
 }

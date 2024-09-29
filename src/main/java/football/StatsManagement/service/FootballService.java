@@ -295,7 +295,8 @@ public class FootballService {
     List<Player> players = getPlayersByClub(clubId);
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
     for (Player player : players) {
-      PlayerSeasonStat playerSeasonStat = getPlayerSeasonStatByPlayerId(player.getId(), seasonId);
+      List<PlayerGameStat> playerGameStats = getPlayerGameStatsByPlayerAndSeason(player.getId(), seasonId);
+      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(player, playerGameStats, seasonId, clubId);
       playerSeasonStats.add(playerSeasonStat);
     }
     return playerSeasonStats;
@@ -307,16 +308,21 @@ public class FootballService {
    * @param seasonId
    * @return player season stat
    */
-  public PlayerSeasonStat getPlayerSeasonStatByPlayerId(int playerId, int seasonId) throws ResourceNotFoundException {
-    // playerIdに紐づくPlayerGameStatを取得し、seasonIdに紐づくものだけを抽出
+  public List<PlayerSeasonStat> getPlayerSeasonStatByPlayerId(int playerId, int seasonId) throws ResourceNotFoundException {
     Player player = getPlayer(playerId);
-    List<PlayerGameStat> playerGameStatsInSeason = getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
-
-    // PlayerSeasonStatを作成し、PlayerGameStatsから集計
-    PlayerSeasonStat playerSeasonStat = new PlayerSeasonStat(player, seasonId, player.getClubId());
-    aggregatePlayerSeasonStat(playerSeasonStat, playerGameStatsInSeason);
-
-    return playerSeasonStat;
+    List<PlayerGameStat> playerGameStats = getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
+    // 存在するclubIdを取得（基本は1つだが、シーズン中の移籍があれば複数存在する）
+    List<Integer> clubIds = playerGameStats.stream()
+        .map(PlayerGameStat::getClubId)
+        .distinct()
+        .collect(Collectors.toList());
+    // playerSeasonStatを作成し、各クラブでの成績をリストに追加
+    List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
+    for (int clubId : clubIds) {
+      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(player, playerGameStats, seasonId, clubId);
+      playerSeasonStats.add(playerSeasonStat);
+    }
+    return playerSeasonStats;
   }
 
   /**
@@ -328,32 +334,10 @@ public class FootballService {
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
     List<Season> seasons = getSeasons();
     for (Season season : seasons) {
-      PlayerSeasonStat playerSeasonStat = getPlayerSeasonStatByPlayerId(playerId, season.getId());
-      if (playerSeasonStat != null) {
-        playerSeasonStats.add(playerSeasonStat);
-      }
+      List<PlayerSeasonStat> playerSeasonStatsInSeason = getPlayerSeasonStatByPlayerId(playerId, season.getId());
+      playerSeasonStats.addAll(playerSeasonStatsInSeason);
     }
     return playerSeasonStats;
-  }
-
-  /**
-   * Aggregate player season stat
-   * @param playerSeasonStat
-   * @param playerGameStats
-   */
-  private void aggregatePlayerSeasonStat(PlayerSeasonStat playerSeasonStat, List<PlayerGameStat> playerGameStats) {
-    for (PlayerGameStat playerGameStat : playerGameStats) {
-      playerSeasonStat.setGoals(playerSeasonStat.getGoals() + playerGameStat.getGoals());
-      playerSeasonStat.setAssists(playerSeasonStat.getAssists() + playerGameStat.getAssists());
-      playerSeasonStat.setMinutes(playerSeasonStat.getMinutes() + playerGameStat.getMinutes());
-      playerSeasonStat.setYellowCards(playerSeasonStat.getYellowCards() + playerGameStat.getYellowCards());
-      playerSeasonStat.setRedCards(playerSeasonStat.getRedCards() + playerGameStat.getRedCards());
-      if (playerGameStat.isStarter()) {
-        playerSeasonStat.setStarterGames(playerSeasonStat.getStarterGames() + 1);
-      } else {
-        playerSeasonStat.setSubstituteGames(playerSeasonStat.getSubstituteGames() + 1);
-      }
-    }
   }
 
   /**
@@ -409,10 +393,10 @@ public class FootballService {
   @Transactional
   public void registerGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats)
       throws FootballException, ResourceNotFoundException {
-    GameResult gameResult = gameResultWithPlayerStats.getGameResult();
+    GameResult gameResult = gameResultWithPlayerStats.gameResult();
     //    個人成績から出場なしの選手を除外
-    List<PlayerGameStat> homeClubStats = gameResultWithPlayerStats.getHomeClubStats();
-    List<PlayerGameStat> awayClubStats = gameResultWithPlayerStats.getAwayClubStats();
+    List<PlayerGameStat> homeClubStats = gameResultWithPlayerStats.homeClubStats();
+    List<PlayerGameStat> awayClubStats = gameResultWithPlayerStats.awayClubStats();
 
     homeClubStats = getPlayerGameStatsExceptAbsent(homeClubStats);
     awayClubStats = getPlayerGameStatsExceptAbsent(awayClubStats);
@@ -447,8 +431,8 @@ public class FootballService {
    */
   private void confirmGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats, List<PlayerGameStat> homeClubStats, List<PlayerGameStat> awayClubStats) throws FootballException {
     // スコアが正しいか確認
-    int homeScore = gameResultWithPlayerStats.getGameResult().getHomeScore();
-    int awayScore = gameResultWithPlayerStats.getGameResult().getAwayScore();
+    int homeScore = gameResultWithPlayerStats.gameResult().getHomeScore();
+    int awayScore = gameResultWithPlayerStats.gameResult().getAwayScore();
     int homeScoreCalculated = getScoreByPlayerGameStats(homeClubStats);
     int awayScoreCalculated = getScoreByPlayerGameStats(awayClubStats);
     if (homeScore != homeScoreCalculated) {
