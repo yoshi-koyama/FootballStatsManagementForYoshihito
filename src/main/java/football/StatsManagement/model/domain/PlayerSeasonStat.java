@@ -1,32 +1,23 @@
 package football.StatsManagement.model.domain;
 
-import football.StatsManagement.exception.ResourceNotFoundException;
 import football.StatsManagement.model.data.Player;
 import football.StatsManagement.model.data.PlayerGameStat;
-import football.StatsManagement.service.FootballService;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-@AllArgsConstructor
-public class PlayerSeasonStat {
-  private Player player;
-  private List<PlayerGameStat> playerGameStats;
-
-  private int seasonId;
-  private int clubId;
-
-  private int games;
-  private int starterGames;
-  private int substituteGames;
-  private int goals;
-  private int assists;
-  private int minutes;
-  private int yellowCards;
-  private int redCards;
+public record PlayerSeasonStat(
+    Player player,
+    List<PlayerGameStat> playerGameStats,
+    int seasonId,
+    int clubId,
+    int games,
+    int starterGames,
+    int substituteGames,
+    int goals,
+    int assists,
+    int minutes,
+    int yellowCards,
+    int redCards
+) {
 
   public static PlayerSeasonStat initialPlayerSeasonStat(Player player, List<PlayerGameStat> playerGameStats, int seasonId, int clubId) {
     List<PlayerGameStat> playerGameStatsByClub = playerGameStats.stream()
