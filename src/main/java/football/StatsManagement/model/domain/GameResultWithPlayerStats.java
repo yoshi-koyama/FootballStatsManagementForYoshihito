@@ -6,11 +6,6 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
-public class GameResultWithPlayerStats {
-  private final GameResult gameResult;
-  private final List<PlayerGameStat> homeClubStats;
-  private final List<PlayerGameStat> awayClubStats;
+public record GameResultWithPlayerStats(GameResult gameResult, List<PlayerGameStat> homeClubStats, List<PlayerGameStat> awayClubStats) {
 
 }

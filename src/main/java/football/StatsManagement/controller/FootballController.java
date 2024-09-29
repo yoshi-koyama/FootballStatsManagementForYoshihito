@@ -130,7 +130,6 @@ public class FootballController {
    * @param seasonId
    * @return 順位表
    */
-  // TODO: seasonIdの取得方法を検討（@RequestParamで取得するか、@PathVariableで取得するか）
   @Operation(summary = "順位表の取得", description = "リーグIDとシーズンIDに紐づく順位表を取得します")
   @GetMapping("/countries/{countryId}/leagues/{leagueId}/standings/{seasonId}")
   public Standing getStanding(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int seasonId) {
@@ -206,7 +205,7 @@ public class FootballController {
    */
   @Operation(summary = "選手成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
   @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}/player-season-stat/{seasonId}")
-  public PlayerSeasonStat getPlayerSeasonStat(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
+  public List<PlayerSeasonStat> getPlayerSeasonStat(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerSeasonStatByPlayerId(playerId, seasonId);
   }
