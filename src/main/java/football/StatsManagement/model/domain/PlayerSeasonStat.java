@@ -5,7 +5,7 @@ import football.StatsManagement.model.data.PlayerGameStat;
 import java.util.List;
 
 public record PlayerSeasonStat(
-    Player player,
+    int playerId,
     List<PlayerGameStat> playerGameStats,
     int seasonId,
     int clubId,
@@ -19,7 +19,7 @@ public record PlayerSeasonStat(
     int redCards
 ) {
 
-  public static PlayerSeasonStat initialPlayerSeasonStat(Player player, List<PlayerGameStat> playerGameStats, int seasonId, int clubId) {
+  public static PlayerSeasonStat initialPlayerSeasonStat(int playerId, List<PlayerGameStat> playerGameStats, int seasonId, int clubId) {
     List<PlayerGameStat> playerGameStatsByClub = playerGameStats.stream()
         .filter(playerGameStat -> playerGameStat.getClubId() == clubId)
         .toList();
@@ -44,6 +44,6 @@ public record PlayerSeasonStat(
         .mapToInt(PlayerGameStat::getRedCards)
         .sum();
 
-    return new PlayerSeasonStat(player, playerGameStats, seasonId, clubId, games, starterGames, substituteGames, goals, assists, minutes, yellowCards, redCards);
+    return new PlayerSeasonStat(playerId, playerGameStats, seasonId, clubId, games, starterGames, substituteGames, goals, assists, minutes, yellowCards, redCards);
   }
 }

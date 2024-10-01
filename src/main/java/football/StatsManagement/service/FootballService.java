@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -251,17 +252,16 @@ public class FootballService {
   @Transactional
   public void updatePlayer(Player player) throws FootballException, ResourceNotFoundException {
     // numberが重複していないか確認
-    List<Player> players = getPlayersByClub(player.getClubId());
+    List<Player> players = repository.selectPlayersByClub(player.getClubId());
     for (Player p : players) {
       if (p.getNumber() == player.getNumber() && p.getId() != player.getId()) {
         throw new FootballException("Player number is already used");
       }
     }
     // playerが存在するか確認
-    Player targettedPlayer = getPlayer(player.getId());
-    if (targettedPlayer == null) {
-      throw new ResourceNotFoundException("Player not found");
-    }
+    repository.selectPlayer(player.getId())
+        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+
     repository.updatePlayer(player);
   }
 
@@ -276,13 +276,9 @@ public class FootballService {
 
 //  other
   public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) throws ResourceNotFoundException {
-    List<PlayerGameStat> playerGameStats = getPlayerGameStatsByPlayer(playerId);
-    List<GameResult> gameResultsInSeason = getGameResultsByClubAndSeason(seasonId, getPlayer(playerId).getClubId());
-    List<PlayerGameStat> playerGameStatsInSeason = playerGameStats.stream()
-        .filter(playerGameStat -> gameResultsInSeason.stream()
-            .anyMatch(gameResult -> playerGameStat.getGameId() == gameResult.getId()))
-        .collect(Collectors.toList());
-    return playerGameStatsInSeason;
+    Player player = repository.selectPlayer(playerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+    return repository.selectPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
   }
 
   /**
@@ -296,7 +292,7 @@ public class FootballService {
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
     for (Player player : players) {
       List<PlayerGameStat> playerGameStats = getPlayerGameStatsByPlayerAndSeason(player.getId(), seasonId);
-      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(player, playerGameStats, seasonId, clubId);
+      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(player.getId(), playerGameStats, seasonId, clubId);
       playerSeasonStats.add(playerSeasonStat);
     }
     return playerSeasonStats;
@@ -309,7 +305,6 @@ public class FootballService {
    * @return player season stat
    */
   public List<PlayerSeasonStat> getPlayerSeasonStatByPlayerId(int playerId, int seasonId) throws ResourceNotFoundException {
-    Player player = getPlayer(playerId);
     List<PlayerGameStat> playerGameStats = getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
     // 存在するclubIdを取得（基本は1つだが、シーズン中の移籍があれば複数存在する）
     List<Integer> clubIds = playerGameStats.stream()
@@ -319,7 +314,7 @@ public class FootballService {
     // playerSeasonStatを作成し、各クラブでの成績をリストに追加
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
     for (int clubId : clubIds) {
-      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(player, playerGameStats, seasonId, clubId);
+      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(playerId, playerGameStats, seasonId, clubId);
       playerSeasonStats.add(playerSeasonStat);
     }
     return playerSeasonStats;
@@ -482,12 +477,14 @@ public class FootballService {
   }
 
   public GameResultWithPlayerStats getGameResultWithPlayerStats(int gameId) throws ResourceNotFoundException {
-    GameResult gameResult = getGameResult(gameId);
-    List<PlayerGameStat> homeClubStats = getPlayerGameStatsByPlayer(gameResult.getHomeClubId()).stream()
-        .filter(playerGameStat -> playerGameStat.getGameId() == gameId)
+    GameResult gameResult = repository.selectGameResult(gameId)
+        .orElseThrow(() -> new ResourceNotFoundException("Game result not found"));
+    List<PlayerGameStat> playerGameStats = repository.selectPlayerGameStatsByGame(gameId);
+    List<PlayerGameStat> homeClubStats = playerGameStats.stream()
+        .filter(playerGameStat -> playerGameStat.getClubId() == gameResult.getHomeClubId())
         .collect(Collectors.toList());
-    List<PlayerGameStat> awayClubStats = getPlayerGameStatsByPlayer(gameResult.getAwayClubId()).stream()
-        .filter(playerGameStat -> playerGameStat.getGameId() == gameId)
+    List<PlayerGameStat> awayClubStats = playerGameStats.stream()
+        .filter(playerGameStat -> playerGameStat.getClubId() == gameResult.getAwayClubId())
         .collect(Collectors.toList());
     return new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
   }
