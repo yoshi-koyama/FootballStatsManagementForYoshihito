@@ -469,4 +469,21 @@ class FootballServiceTest {
     // 例外が投げられることを確認
     assertThrows(ResourceNotFoundException.class, () -> sut.getGameResultWithPlayerStats(1));
   }
+
+  @Test
+  @DisplayName("現在のシーズンが取得できること")
+  void getCurrentSeason() throws ResourceNotFoundException {
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2000-01", LocalDate.of(2000, 7, 1), LocalDate.of(2001, 6, 30), true)));
+    Season actual = sut.getCurrentSeason();
+    verify(repository, times(1)).selectCurrentSeason();
+  }
+
+  @Test
+  @DisplayName("現在のシーズンが取得できること_存在しない場合に適切に例外処理されること")
+  void getCurrentSeason_withNotFound() {
+    // リポジトリが空の状態を作る
+    when(repository.selectCurrentSeason()).thenReturn(Optional.empty());
+    // 例外が投げられることを確認
+    assertThrows(ResourceNotFoundException.class, () -> sut.getCurrentSeason());
+  }
 }

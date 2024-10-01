@@ -488,4 +488,9 @@ public class FootballService {
         .collect(Collectors.toList());
     return new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
   }
+
+  public Season getCurrentSeason() throws ResourceNotFoundException {
+    return repository.selectCurrentSeason()
+        .orElseThrow(() -> new ResourceNotFoundException("Current season not found"));
+  }
 }

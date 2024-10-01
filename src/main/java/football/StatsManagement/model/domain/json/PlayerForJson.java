@@ -14,6 +14,7 @@ public class PlayerForJson {
   @NotBlank
   private String name;
 
+  @Positive
   private int number;
 
 }
