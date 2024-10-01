@@ -12,7 +12,7 @@ function PlayersPage() {
   const [clubName, setClubName] = useState(''); // クラブ名を管理するstate
 
   useEffect(() => {
-    fetch(`/countries/${countryId}/leagues/${leagueId}/clubs/${clubId}/players`) // APIエンドポイント
+    fetch(`/clubs/${clubId}/players`) // APIエンドポイント
       .then((response) => response.json())
       .then((data) => setPlayers(data));
 
@@ -68,6 +68,9 @@ function PlayersPage() {
 
   return (
     <div>
+      {/* Homeに戻るリンク */}
+      <Link to="/">Home</Link>
+      <br /> {/* 改行 */}
       {/* ClubsPageに戻るリンク */}
       <Link to={`/countries/${countryId}/leagues/${leagueId}/clubs`}>Back to Clubs</Link>
       {/* クラブ名を表示 */}

@@ -59,8 +59,11 @@ function LeaguesPage() {
 
   return (
     <div>
+      {/* Homeに戻るリンク */}
+      <Link to="/">Home</Link>
+      <br /> {/* 改行 */}
       {/* CountriesPageに戻るリンク */}
-      <Link to="/">Back to Countries</Link>
+      <Link to="/countries">Back to Countries</Link>
       {/* 国名を表示 */}
       {countryName && <h1>{countryName} Leagues</h1>} {/* 国名を表示する要素を追加 */}
       <ul>
