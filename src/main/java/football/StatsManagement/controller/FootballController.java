@@ -134,6 +134,7 @@ public class FootballController {
     return Standing.initialStanding(leagueId, seasonId, service);
   }
 
+
   /**
    * クラブIDに紐づく選手一覧の取得
    * @param clubId
@@ -151,9 +152,9 @@ public class FootballController {
    * @param seasonId
    * @return 選手の試合成績リスト
    */
-  @Operation(summary = "選手成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
+  @Operation(summary = "選手試合成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
   @GetMapping("/players/{playerId}/player-game-stats/{seasonId}")
-  public List<PlayerGameStat> getPlayerGameStats(@PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
+  public List<PlayerGameStat> getPlayerGameStatsBySeason(@PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
   }
@@ -177,7 +178,7 @@ public class FootballController {
    * @param seasonId
    * @return 選手のシーズン成績
    */
-  @Operation(summary = "選手成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
+  @Operation(summary = "選手シーズン成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
   @GetMapping("/players/{playerId}/player-season-stat/{seasonId}")
   public List<PlayerSeasonStat> getPlayerSeasonStat(@PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
       throws ResourceNotFoundException {
@@ -256,7 +257,7 @@ public class FootballController {
    */
   @Operation(summary = "選手の登録", description = "選手を新規登録します")
   @PostMapping("/player")
-  public ResponseEntity<Player> registerPlayer(@RequestBody PlayerForJson playerForJson) throws FootballException {
+  public ResponseEntity<Player> registerPlayer(@RequestBody @Valid PlayerForJson playerForJson) throws FootballException {
     Player player = new Player(playerForJson);
     service.registerPlayer(player);
 

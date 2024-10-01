@@ -187,9 +187,21 @@ public interface FootballRepository {
   @Select("SELECT * FROM player_game_stats WHERE game_id = #{gameId}")
   List<PlayerGameStat> selectPlayerGameStatsByGame(int gameId);
 
-  // player_game_statsとgame_resultsを結合して、game_idでグループ化した後、player_idとseason_idでフィルタリング
+  /**
+   * Select player game stats by player and season
+   * @param playerId
+   * @param seasonId
+   * @return
+   */
   @Select("SELECT * FROM player_game_stats pgs JOIN game_results gr ON pgs.game_id = gr.id WHERE gr.season_id = #{seasonId} AND pgs.player_id = #{playerId}")
   List<PlayerGameStat> selectPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId);
+
+  /**
+   * Select current season
+   * @return
+   */
+  @Select("SELECT * FROM seasons WHERE current = true")
+  Optional<Season> selectCurrentSeason();
 
 //  update
   /**
