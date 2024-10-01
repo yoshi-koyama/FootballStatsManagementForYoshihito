@@ -113,113 +113,84 @@ public class FootballController {
 
   /**
    * リーグIDに紐づくクラブ一覧の取得
-   * @param countryId
    * @param leagueId
    * @return クラブ一覧
    */
   @Operation(summary = "クラブ一覧の取得", description = "リーグIDに紐づくクラブの一覧を取得します")
-  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs")
-  public List<Club> getClubs(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId) {
+  @GetMapping("/leagues/{leagueId}/clubs")
+  public List<Club> getClubs(@PathVariable @Positive int leagueId) {
     return service.getClubsByLeague(leagueId);
   }
 
   /**
    * リーグIDとシーズンIDに紐づく順位表の取得
-   * @param countryId
    * @param leagueId
    * @param seasonId
    * @return 順位表
    */
   @Operation(summary = "順位表の取得", description = "リーグIDとシーズンIDに紐づく順位表を取得します")
-  @GetMapping("/countries/{countryId}/leagues/{leagueId}/standings/{seasonId}")
-  public Standing getStanding(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int seasonId) {
+  @GetMapping("/leagues/{leagueId}/standings/{seasonId}")
+  public Standing getStanding(@PathVariable @Positive int leagueId, @PathVariable @Positive int seasonId) {
     return Standing.initialStanding(leagueId, seasonId, service);
   }
 
   /**
    * クラブIDに紐づく選手一覧の取得
-   * @param countryId
-   * @param leagueId
    * @param clubId
    * @return 選手一覧
    */
   @Operation(summary = "選手一覧の取得", description = "クラブIDに紐づく選手の一覧を取得します")
-  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players")
-  public List<Player> getPlayers(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId) {
+  @GetMapping("/clubs/{clubId}/players")
+  public List<Player> getPlayers(@PathVariable @Positive int clubId) {
     return service.getPlayersByClub(clubId);
   }
 
   /**
-   * 選手IDに紐づく選手情報の取得
-   * @param countryId
-   * @param leagueId
-   * @param clubId
-   * @param playerId
-   * @return 選手情報
-   */
-  @Operation(summary = "選手情報の取得", description = "選手IDに紐づく選手情報を取得します")
-  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}")
-  public Player getPlayer(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId) throws ResourceNotFoundException {
-    return service.getPlayer(playerId);
-  }
-
-  /**
    * 選手IDとシーズンIDに紐づく選手成績の取得
-   * @param countryId
-   * @param leagueId
-   * @param clubId
    * @param playerId
    * @param seasonId
    * @return 選手の試合成績リスト
    */
   @Operation(summary = "選手成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
-  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}/player-game-stats/{seasonId}")
-  public List<PlayerGameStat> getPlayerGameStats(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
+  @GetMapping("/players/{playerId}/player-game-stats/{seasonId}")
+  public List<PlayerGameStat> getPlayerGameStats(@PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
   }
 
   /**
    * クラブIDとシーズンIDに紐づく選手成績の取得
-   * @param countryId
-   * @param leagueId
    * @param clubId
    * @param seasonId
    * @return 選手のシーズン成績リスト
    */
   @Operation(summary = "クラブ所属選手シーズン成績の取得", description = "クラブIDとシーズンIDに紐づく選手シーズン成績を取得します")
-  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players-season-stats/{seasonId}")
-  public List<PlayerSeasonStat> getPlayerSeasonStatsByClubId(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int seasonId)
+  @GetMapping("/clubs/{clubId}/players-season-stats/{seasonId}")
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByClubId(@PathVariable @Positive int clubId, @PathVariable @Positive int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerSeasonStatsByClubId(clubId, seasonId);
   }
 
   /**
    * 選手IDとシーズンIDに紐づく選手成績の取得
-   * @param countryId
-   * @param leagueId
-   * @param clubId
    * @param playerId
    * @param seasonId
    * @return 選手のシーズン成績
    */
   @Operation(summary = "選手成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
-  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}/player-season-stat/{seasonId}")
-  public List<PlayerSeasonStat> getPlayerSeasonStat(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
+  @GetMapping("/players/{playerId}/player-season-stat/{seasonId}")
+  public List<PlayerSeasonStat> getPlayerSeasonStat(@PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerSeasonStatByPlayerId(playerId, seasonId);
   }
 
   /**
    * 選手IDに紐づく通算成績の取得
-   * @param countryId
-   * @param leagueId
-   * @param clubId
    * @param playerId
    * @return 選手のシーズン成績リスト
    */
-  @GetMapping("/countries/{countryId}/leagues/{leagueId}/clubs/{clubId}/players/{playerId}/player-season-stats")
-  public List<PlayerSeasonStat> getPlayerSeasonStatsByPlayerId(@PathVariable @Positive int countryId, @PathVariable @Positive int leagueId, @PathVariable @Positive int clubId, @PathVariable @Positive int playerId)
+  @GetMapping("/players/{playerId}/player-season-stats")
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByPlayerId(@PathVariable @Positive int playerId)
       throws ResourceNotFoundException {
     return service.getPlayerSeasonStatsByPlayerId(playerId);
   }
@@ -231,7 +202,7 @@ public class FootballController {
    * @return 試合結果
    */
   @Operation(summary = "試合結果の取得", description = "試合IDに紐づく試合結果を取得します")
-  @GetMapping("game-results/{gameId}")
+  @GetMapping("/game-results/{gameId}")
   public GameResult getGameResult(@PathVariable @Positive int gameId) throws ResourceNotFoundException {
     return service.getGameResult(gameId);
   }

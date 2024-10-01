@@ -49,6 +49,8 @@ function CountriesPage() {
 
   return (
     <div>
+      {/* Homeに戻るリンク */}
+      <Link to="/">Home</Link>
       <h1>Countries</h1>
       <ul>
         {countries.map((country) => (
