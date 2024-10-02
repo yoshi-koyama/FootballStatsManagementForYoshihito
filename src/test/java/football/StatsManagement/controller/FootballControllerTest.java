@@ -7,13 +7,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Country;
 import football.StatsManagement.model.data.League;
+import football.StatsManagement.model.data.Player;
+import football.StatsManagement.model.data.Season;
 import football.StatsManagement.model.domain.Standing;
 import football.StatsManagement.service.FootballService;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -501,10 +507,130 @@ class FootballControllerTest {
   }
 
   @Test
-  void registerSeason() {
+  @DisplayName("シーズンの登録ができること")
+  void registerSeason() throws Exception {
+    // JSONリクエストボディの作成
+    String requestBody = """
+        {
+          "name": "2024-25",
+          "startDate": "2024-07-01",
+          "endDate": "2025-06-30"    
+        }
+        """;
+    mockMvc.perform(MockMvcRequestBuilders.post("/season")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isOk());
+    verify(service, times(1)).registerSeason(any(Season.class));
   }
 
   @Test
-  void updatePlayer() {
+  @DisplayName("シーズンの登録の際にバリデーションエラーが発生すること")
+  void registerSeasonWithInvalidRequest() throws Exception {
+    // JSONリクエストボディの作成（nameは形式通り、startDateとendDateはnull）
+    String requestBody = """
+        {
+          "name": "",
+          "startDate": null,
+          "endDate": null 
+        }
+        """;
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/season")
+            .contentType("application/json")
+            .content(requestBody))
+        .andExpect(status().isBadRequest())  // ステータスが400であることを確認
+        .andExpect(result -> {
+          MethodArgumentNotValidException ex = (MethodArgumentNotValidException) result.getResolvedException();  // キャスト
+          BindingResult bindingResult = ex.getBindingResult();  // バインディング結果を取得
+          List<FieldError> fieldErrors = bindingResult.getFieldErrors();  // フィールドエラーを取得
+          assertEquals(3, fieldErrors.size());  // フィールドエラーの数が3であることを確認
+
+          boolean nameErrorPresent = false;  // nameのエラーがあるかどうか
+          boolean startDateErrorPresent = false;  // startDateのエラーがあるかどうか
+          boolean endDateErrorPresent = false;  // endDateのエラーがあるかどうか
+
+          for (FieldError fieldError : fieldErrors) {
+            if (fieldError.getField().equals("name")) {  // nameのエラーの場合
+              nameErrorPresent = true;  // nameのエラーがあることを示す
+              assertEquals("must not be blank", fieldError.getDefaultMessage());  // エラーメッセージが"must not be blank"であることを確認
+            } else if (fieldError.getField().equals("startDate")) {  // startDateのエラーの場合
+              startDateErrorPresent = true;  // startDateのエラーがあることを示す
+              assertEquals("must not be null", fieldError.getDefaultMessage());  // エラーメッセージが"must not be null"であることを確認
+            } else if (fieldError.getField().equals("endDate")) {  // endDateのエラーの場合
+              endDateErrorPresent = true;  // endDateのエラーがあることを示す
+              assertEquals("must not be null", fieldError.getDefaultMessage());  // エラーメッセージが"must not be null"であることを確認
+            }
+          }
+
+          assertTrue(nameErrorPresent);  // nameのエラーがあることを確認
+          assertTrue(startDateErrorPresent);  // startDateのエラーがあることを確認
+          assertTrue(endDateErrorPresent);  // endDateのエラーがあることを確認
+        });
+
   }
+
+  @Test
+  @DisplayName("選手の更新ができること")
+  void updatePlayer() throws Exception {
+    String requestBody = """
+        {
+          "id": 1,
+          "name": "Updated Player",
+          "clubId": 1,
+          "number": 1
+        }
+        """;
+    mockMvc.perform(MockMvcRequestBuilders.put("/player")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isOk());
+    verify(service, times(1)).updatePlayer(any(Player.class));
+  }
+
+  @Test
+  @DisplayName("選手の更新の際にバリデーションエラーが発生すること")
+  void updatePlayerWithInvalidRequest() throws Exception {
+    String requestBody = """
+        {
+          "id": 0,
+          "name": "",
+          "clubId": 0,
+          "number": 0
+        }
+        """;
+    mockMvc.perform(MockMvcRequestBuilders.put("/player")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> {
+          // 例外を取得
+          MethodArgumentNotValidException ex = (MethodArgumentNotValidException) result.getResolvedException();
+          BindingResult bindingResult = ex.getBindingResult();
+          List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+
+          // バリデーションエラーをフィールドごとに期待されるメッセージをマップで定義
+          Map<String, String> expectedErrors = Map.of(
+              "id", "must be greater than 0",
+              "name", "must not be blank",
+              "clubId", "must be greater than 0",
+              "number", "must be greater than 0"
+          );
+
+          // エラーメッセージが予期したものか確認
+          assertEquals(expectedErrors.size(), fieldErrors.size(), "エラーの数が予期と異なります");
+
+          // フィールドエラーを検証
+          fieldErrors.forEach(fieldError -> {
+            String field = fieldError.getField();
+            String expectedMessage = expectedErrors.get(field);
+            assertNotNull(expectedMessage, "未定義のフィールドエラー: " + field);
+
+            // エラーメッセージが期待通りか確認
+            assertEquals(expectedMessage, fieldError.getDefaultMessage(),
+                String.format("フィールド '%s' のエラーメッセージが一致しません", field));
+          });
+        });
+  }
+
 }

@@ -135,6 +135,30 @@ class FootballServiceTest {
   }
 
   @Test
+  @DisplayName("シーズン登録で、シーズン名の形式が不正である場合に適切に例外処理されること")
+  void registerSeason_withInvalidName() {
+    SeasonForJson seasonForJson = new SeasonForJson("2000-2001", LocalDate.of(2000, 7, 1), LocalDate.of(2001, 6, 30));
+    Season season = new Season(seasonForJson);
+    // 例外が投げられることを確認し、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerSeason(season));
+
+    // 期待される例外メッセージを確認
+    assertEquals("Season name should be in the format of \'yyyy-yy\'", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("シーズン登録で、シーズン名の数字が不正である場合に適切に例外処理されること")
+  void registerSeason_withInvalidYear() {
+    SeasonForJson seasonForJson = new SeasonForJson("2000-02", LocalDate.of(2000, 7, 1), LocalDate.of(2001, 6, 30));
+    Season season = new Season(seasonForJson);
+    // 例外が投げられることを確認し、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerSeason(season));
+
+    // 期待される例外メッセージを確認
+    assertEquals("Year in season name is not correct", thrown.getMessage());
+  }
+
+  @Test
   void registerSeason_withDuplicatedName() {
     SeasonForJson seasonForJson = new SeasonForJson("2000-01", LocalDate.of(2000, 7, 1), LocalDate.of(2001, 6, 30));
     Season season = new Season(seasonForJson);

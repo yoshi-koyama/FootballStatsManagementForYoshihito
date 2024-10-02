@@ -105,9 +105,16 @@ public class FootballService {
     if (season.getStartDate().isAfter(season.getEndDate())) {
       throw new FootballException("Start date should be before end date");
     }
+    // シーズン名が適正であるか確認（2024-25, 1999-00のような形式）
+    if (!season.getName().matches("\\d{4}-\\d{2}")) {
+      throw new FootballException("Season name should be in the format of 'yyyy-yy'");
+    }
+    // シーズン名が数字が適切であるか確認
+    confirmSeasonNameNumber(season.getName());
     // 既存のシーズンと重複しないか確認
     List<Season> seasons = getSeasons();
     for (Season s : seasons) {
+      // 既存のシーズンと名前が重複しないか確認
       if (s.getName().equals(season.getName())) {
         throw new FootballException("Season name is already used");
       }
@@ -118,6 +125,19 @@ public class FootballService {
     }
     updateSeasonsCurrentFalse();
     repository.insertSeason(season);
+  }
+
+  private void confirmSeasonNameNumber(String seasonName) throws FootballException {
+    String[] seasonNameArray = seasonName.split("-");
+    int startYear = Integer.parseInt(seasonNameArray[0]) % 100;
+    int endYear = Integer.parseInt(seasonNameArray[1]);
+    if (startYear == 99 && endYear == 0) {
+      return;
+    } else if (startYear + 1 == endYear) {
+      return;
+    } else {
+      throw new FootballException("Year in season name is not correct");
+    }
   }
 
 //  get
