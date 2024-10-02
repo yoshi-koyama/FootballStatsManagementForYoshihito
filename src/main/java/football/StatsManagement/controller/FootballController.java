@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -295,10 +296,7 @@ public class FootballController {
    */
   @Operation(summary = "シーズンの登録", description = "シーズンを新規登録します")
   @PostMapping("/season")
-  public ResponseEntity<Season> registerSeason(@RequestBody @Valid SeasonForJson seasonForJson, BindingResult result) throws FootballException {
-    if (result.hasErrors()) {
-      throw new FootballException("シーズン名の形式が不正です。/n シーズン名は「yyyy-yy」の形式で入力してください。");
-    }
+  public ResponseEntity<Season> registerSeason(@RequestBody @Valid SeasonForJson seasonForJson) throws FootballException {
     Season season = new Season(seasonForJson);
     service.registerSeason(season);
 
@@ -311,7 +309,7 @@ public class FootballController {
    * @return 更新された選手情報
    */
   @Operation(summary = "選手情報の更新", description = "選手情報を更新します")
-  @PatchMapping("/player")
+  @PutMapping("/player")
   public ResponseEntity<Player> updatePlayer(@RequestBody @Valid Player player) throws FootballException, ResourceNotFoundException {
     service.updatePlayer(player);
 
