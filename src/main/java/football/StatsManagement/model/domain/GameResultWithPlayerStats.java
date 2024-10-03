@@ -5,7 +5,13 @@ import football.StatsManagement.model.data.PlayerGameStat;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
-public record GameResultWithPlayerStats(GameResult gameResult, List<PlayerGameStat> homeClubStats, List<PlayerGameStat> awayClubStats) {
-
+@Getter
+@Setter
+@AllArgsConstructor
+public class GameResultWithPlayerStats {
+  private GameResult gameResult;
+  private List<PlayerGameStat> homePlayerGameStats;
+  private List<PlayerGameStat> awayPlayerGameStats;
 }

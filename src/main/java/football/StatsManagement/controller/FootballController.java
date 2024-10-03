@@ -1,6 +1,7 @@
 package football.StatsManagement.controller;
 
 import football.StatsManagement.exception.ResourceNotFoundException;
+import football.StatsManagement.model.domain.json.GameResultWithPlayerStatsForJson;
 import football.StatsManagement.service.FootballService;
 import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Club;
@@ -21,6 +22,7 @@ import football.StatsManagement.model.domain.Standing;
 import football.StatsManagement.model.domain.json.SeasonForJson;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
@@ -45,6 +47,16 @@ public class FootballController {
   @Autowired
   public FootballController(FootballService service) {
     this.service = service;
+  }
+
+  /**
+   * 現在シーズンの取得
+   * @return 現在シーズン
+   */
+  @Operation(summary = "現在シーズンの取得", description = "現在のシーズンを取得します")
+  @GetMapping("/seasons/current")
+  public Season getCurrentSeason() throws ResourceNotFoundException {
+    return service.getCurrentSeason();
   }
 
   /**
@@ -131,7 +143,7 @@ public class FootballController {
    */
   @Operation(summary = "順位表の取得", description = "リーグIDとシーズンIDに紐づく順位表を取得します")
   @GetMapping("/leagues/{leagueId}/standings/{seasonId}")
-  public Standing getStanding(@PathVariable @Positive int leagueId, @PathVariable @Positive int seasonId) {
+  public Standing getStanding(@PathVariable @Positive int leagueId, @PathVariable @Min(100000) int seasonId) throws ResourceNotFoundException {
     return Standing.initialStanding(leagueId, seasonId, service);
   }
 
@@ -155,7 +167,7 @@ public class FootballController {
    */
   @Operation(summary = "選手試合成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
   @GetMapping("/players/{playerId}/player-game-stats/{seasonId}")
-  public List<PlayerGameStat> getPlayerGameStatsBySeason(@PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
+  public List<PlayerGameStat> getPlayerGameStatsBySeason(@PathVariable @Positive int playerId, @PathVariable @Min(100000) int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
   }
@@ -168,7 +180,7 @@ public class FootballController {
    */
   @Operation(summary = "クラブ所属選手シーズン成績の取得", description = "クラブIDとシーズンIDに紐づく選手シーズン成績を取得します")
   @GetMapping("/clubs/{clubId}/players-season-stats/{seasonId}")
-  public List<PlayerSeasonStat> getPlayerSeasonStatsByClubId(@PathVariable @Positive int clubId, @PathVariable @Positive int seasonId)
+  public List<PlayerSeasonStat> getPlayerSeasonStatsByClubId(@PathVariable @Positive int clubId, @PathVariable @Min(100000) int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerSeasonStatsByClubId(clubId, seasonId);
   }
@@ -181,7 +193,7 @@ public class FootballController {
    */
   @Operation(summary = "選手シーズン成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
   @GetMapping("/players/{playerId}/player-season-stat/{seasonId}")
-  public List<PlayerSeasonStat> getPlayerSeasonStat(@PathVariable @Positive int playerId, @PathVariable @Positive int seasonId)
+  public List<PlayerSeasonStat> getPlayerSeasonStat(@PathVariable @Positive int playerId, @PathVariable @Min(100000) int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerSeasonStatByPlayerId(playerId, seasonId);
   }
@@ -267,21 +279,17 @@ public class FootballController {
 
   /**
    * 試合結果の登録
-   * @param gameResultForJson
-   * @param homeClubStatsForInsert
-   * @param awayClubStatsForInsert
+   * @param gameResultWithPlayerStatsForJson
    * @return 登録された試合結果
    */
   @Operation(summary = "試合結果の登録", description = "試合結果を新規登録します")
   @PostMapping("/game-result")
   public ResponseEntity<GameResultWithPlayerStats> registerGameResult(
-      @RequestBody @Valid GameResultForJson gameResultForJson,
-      @RequestBody @Valid List<PlayerGameStatForJson> homeClubStatsForInsert,
-      @RequestBody @Valid List<PlayerGameStatForJson> awayClubStatsForInsert)
+      @RequestBody @Valid GameResultWithPlayerStatsForJson gameResultWithPlayerStatsForJson)
       throws FootballException, ResourceNotFoundException {
-    GameResult gameResult = new GameResult(gameResultForJson);
-    List<PlayerGameStat> homeClubStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForInsert);
-    List<PlayerGameStat> awayClubStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForInsert);
+    GameResult gameResult = new GameResult(gameResultWithPlayerStatsForJson.getGameResult());
+    List<PlayerGameStat> homeClubStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(gameResultWithPlayerStatsForJson.getHomeClubPlayerGameStats());
+    List<PlayerGameStat> awayClubStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(gameResultWithPlayerStatsForJson.getAwayClubPlayerGameStats());
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
 
     service.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats);

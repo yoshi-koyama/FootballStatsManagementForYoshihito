@@ -1,5 +1,7 @@
 package football.StatsManagement.model.domain.json;
 
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -23,15 +25,19 @@ public class GameResultForJson {
   @PositiveOrZero
   private int awayScore;
 
-  @PositiveOrZero
-  private int winnerClubId; // 0 if draw
-
   @Positive
   private int leagueId;
 
   @NotNull
   private LocalDate gameDate;
 
-  @Positive
+  @Min(100000)
   private int seasonId;
+
+  // homeClubIdとawayClubIdが同じではいけない
+  @AssertTrue(message = "Home club and away club must be different.")
+  public boolean isHomeClubDifferentFromAwayClub() {
+    return homeClubId != awayClubId;
+  }
+
 }

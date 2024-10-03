@@ -71,8 +71,8 @@ public interface FootballRepository {
    * Insert a season
    * @param season
    */
-  @Insert("INSERT INTO seasons (name, start_date, end_date) VALUES (#{name}, #{startDate}, #{endDate})")
-  @Options(useGeneratedKeys = true, keyProperty = "id")
+  @Insert("INSERT INTO seasons (id, name, start_date, end_date) VALUES (#{id}, #{name}, #{startDate}, #{endDate})")
+  @Options( keyProperty = "id")
   void insertSeason(Season season);
 
 //  Select
@@ -202,6 +202,14 @@ public interface FootballRepository {
    */
   @Select("SELECT * FROM seasons WHERE current = true")
   Optional<Season> selectCurrentSeason();
+
+  /**
+   * Select a season
+   * @param id
+   * @return
+   */
+  @Select("SELECT * FROM seasons WHERE id = #{id}")
+  Optional<Season> selectSeason(int id);
 
 //  update
   /**

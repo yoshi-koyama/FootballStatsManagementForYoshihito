@@ -1,14 +1,15 @@
 package football.StatsManagement.model.domain;
 
+import football.StatsManagement.exception.ResourceNotFoundException;
 import football.StatsManagement.service.FootballService;
 import football.StatsManagement.model.data.Club;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public record Standing(int leagueId, int seasonId, List<ClubForStanding> clubs) {
+public record Standing(int leagueId, int seasonId, List<ClubForStanding> clubs, String leagueName, String seasonName) {
 
-  public static Standing initialStanding(int leagueId, int seasonId, FootballService service) {
+  public static Standing initialStanding(int leagueId, int seasonId, FootballService service) throws ResourceNotFoundException {
     List<Club> clubs = service.getClubsByLeague(leagueId);
     // リーグによって異なる順位決定方法
     List<ClubForStanding> clubForStandings = rankedClubsForStanding(clubs, seasonId, leagueId, service);
@@ -16,7 +17,9 @@ public record Standing(int leagueId, int seasonId, List<ClubForStanding> clubs) 
     for (int i = 0; i < clubForStandings.size(); i++) {
       clubForStandings.get(i).setPosition(i + 1);
     }
-    return new Standing(leagueId, seasonId, clubForStandings);
+    String leagueName = service.getLeague(leagueId).getName();
+    String seasonName = service.getSeason(seasonId).getName();
+    return new Standing(leagueId, seasonId, clubForStandings, leagueName, seasonName);
   }
 
   private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) {

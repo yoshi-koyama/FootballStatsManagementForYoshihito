@@ -27,7 +27,6 @@ public class GameResult {
     this.awayClubId = gameResultForJson.getAwayClubId();
     this.homeScore = gameResultForJson.getHomeScore();
     this.awayScore = gameResultForJson.getAwayScore();
-    this.winnerClubId = gameResultForJson.getWinnerClubId();
     this.leagueId = gameResultForJson.getLeagueId();
     this.gameDate = gameResultForJson.getGameDate();
     this.seasonId = gameResultForJson.getSeasonId();
