@@ -123,7 +123,10 @@ public class FootballService {
         throw new FootballException("Season period is already used");
       }
     }
+    // ここまで確認フェーズ、以降は登録処理
     updateSeasonsCurrentFalse();
+    // seasonIdをnameから-を取り除いたものに設定
+    season.setId(Integer.parseInt(season.getName().replace("-", "")));
     repository.insertSeason(season);
   }
 
@@ -263,6 +266,26 @@ public class FootballService {
     return repository.selectSeasons();
   }
 
+  /**
+   * Get current season
+   * @param
+   * @return current season
+   */
+  public Season getCurrentSeason() throws ResourceNotFoundException {
+    return repository.selectCurrentSeason()
+        .orElseThrow(() -> new ResourceNotFoundException("Current season not found"));
+  }
+
+  /**
+   * Get season
+   * @param id
+   * @return season
+   */
+  public Season getSeason(int id) throws ResourceNotFoundException {
+    return repository.selectSeason(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Season not found"));
+  }
+
 //  update
 
   /**
@@ -312,7 +335,7 @@ public class FootballService {
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
     for (Player player : players) {
       List<PlayerGameStat> playerGameStats = getPlayerGameStatsByPlayerAndSeason(player.getId(), seasonId);
-      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(player.getId(), playerGameStats, seasonId, clubId);
+      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(player.getId(), playerGameStats, seasonId, clubId, this);
       playerSeasonStats.add(playerSeasonStat);
     }
     return playerSeasonStats;
@@ -334,7 +357,7 @@ public class FootballService {
     // playerSeasonStatを作成し、各クラブでの成績をリストに追加
     List<PlayerSeasonStat> playerSeasonStats = new ArrayList<>();
     for (int clubId : clubIds) {
-      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(playerId, playerGameStats, seasonId, clubId);
+      PlayerSeasonStat playerSeasonStat = PlayerSeasonStat.initialPlayerSeasonStat(playerId, playerGameStats, seasonId, clubId, this);
       playerSeasonStats.add(playerSeasonStat);
     }
     return playerSeasonStats;
@@ -385,17 +408,14 @@ public class FootballService {
 
   /**
    * Get winner club ID
-   * @param homeScore
-   * @param awayScore
-   * @param homeClubId
-   * @param awayClubId
+   * @param gameResult
    * @return winner club ID
    */
-  public int getWinnerClubId(int homeScore, int awayScore, int homeClubId, int awayClubId) {
-    if (homeScore > awayScore) {
-      return homeClubId;
-    } else if (homeScore < awayScore) {
-      return awayClubId;
+  public int getWinnerClubId(GameResult gameResult) {
+    if (gameResult.getHomeScore() > gameResult.getAwayScore()) {
+      return gameResult.getHomeClubId();
+    } else if (gameResult.getHomeScore() < gameResult.getAwayScore()) {
+      return gameResult.getAwayClubId();
     } else {
       return 0;
     }
@@ -405,13 +425,13 @@ public class FootballService {
    * Register game result and player game stats
    * @param gameResultWithPlayerStats
    */
-  @Transactional
+  @Transactional(rollbackFor = FootballException.class)
   public void registerGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats)
       throws FootballException, ResourceNotFoundException {
-    GameResult gameResult = gameResultWithPlayerStats.gameResult();
+    GameResult gameResult = gameResultWithPlayerStats.getGameResult();
     //    個人成績から出場なしの選手を除外
-    List<PlayerGameStat> homeClubStats = gameResultWithPlayerStats.homeClubStats();
-    List<PlayerGameStat> awayClubStats = gameResultWithPlayerStats.awayClubStats();
+    List<PlayerGameStat> homeClubStats = gameResultWithPlayerStats.getHomePlayerGameStats();
+    List<PlayerGameStat> awayClubStats = gameResultWithPlayerStats.getAwayPlayerGameStats();
 
     homeClubStats = getPlayerGameStatsExceptAbsent(homeClubStats);
     awayClubStats = getPlayerGameStatsExceptAbsent(awayClubStats);
@@ -420,8 +440,7 @@ public class FootballService {
     confirmGameResultAndPlayerGameStats(gameResultWithPlayerStats, homeClubStats, awayClubStats);
 
     // 勝者を設定
-    gameResult.setWinnerClubId(
-        getWinnerClubId(gameResult.getHomeScore(), gameResult.getAwayScore(), gameResult.getHomeClubId(), gameResult.getAwayClubId()));
+    gameResult.setWinnerClubId(getWinnerClubId(gameResult));
 
 //    試合結果を登録
     registerGameResult(gameResult);
@@ -446,15 +465,24 @@ public class FootballService {
    */
   private void confirmGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats, List<PlayerGameStat> homeClubStats, List<PlayerGameStat> awayClubStats) throws FootballException {
     // スコアが正しいか確認
-    int homeScore = gameResultWithPlayerStats.gameResult().getHomeScore();
-    int awayScore = gameResultWithPlayerStats.gameResult().getAwayScore();
+    int homeScore = gameResultWithPlayerStats.getGameResult().getHomeScore();
+    int awayScore = gameResultWithPlayerStats.getGameResult().getAwayScore();
     int homeScoreCalculated = getScoreByPlayerGameStats(homeClubStats);
     int awayScoreCalculated = getScoreByPlayerGameStats(awayClubStats);
+    int homeAssists = homeClubStats.stream().mapToInt(PlayerGameStat::getAssists).sum();
+    int awayAssists = awayClubStats.stream().mapToInt(PlayerGameStat::getAssists).sum();
     if (homeScore != homeScoreCalculated) {
       throw new FootballException("Home score is not correct");
     }
     if (awayScore != awayScoreCalculated) {
       throw new FootballException("Away score is not correct");
+    }
+    // アシストがゴールより多くないか確認
+    if (homeAssists > homeScore) {
+      throw new FootballException("Home assists is more than home score");
+    }
+    if (awayAssists > awayScore) {
+      throw new FootballException("Away assists is more than away score");
     }
     // starterの人数確認
     int homeStarterCount = (int) homeClubStats.stream().filter(PlayerGameStat::isStarter).count();
@@ -509,8 +537,5 @@ public class FootballService {
     return new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
   }
 
-  public Season getCurrentSeason() throws ResourceNotFoundException {
-    return repository.selectCurrentSeason()
-        .orElseThrow(() -> new ResourceNotFoundException("Current season not found"));
-  }
+
 }

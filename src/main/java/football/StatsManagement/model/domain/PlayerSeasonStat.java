@@ -1,7 +1,9 @@
 package football.StatsManagement.model.domain;
 
+import football.StatsManagement.exception.ResourceNotFoundException;
 import football.StatsManagement.model.data.Player;
 import football.StatsManagement.model.data.PlayerGameStat;
+import football.StatsManagement.service.FootballService;
 import java.util.List;
 
 public record PlayerSeasonStat(
@@ -16,10 +18,15 @@ public record PlayerSeasonStat(
     int assists,
     int minutes,
     int yellowCards,
-    int redCards
+    int redCards,
+    String playerName,
+    String clubName,
+    String seasonName
 ) {
 
-  public static PlayerSeasonStat initialPlayerSeasonStat(int playerId, List<PlayerGameStat> playerGameStats, int seasonId, int clubId) {
+  public static PlayerSeasonStat initialPlayerSeasonStat(
+      int playerId, List<PlayerGameStat> playerGameStats, int seasonId, int clubId, FootballService service)
+      throws ResourceNotFoundException {
     List<PlayerGameStat> playerGameStatsByClub = playerGameStats.stream()
         .filter(playerGameStat -> playerGameStat.getClubId() == clubId)
         .toList();
@@ -43,7 +50,11 @@ public record PlayerSeasonStat(
     int redCards = playerGameStatsByClub.stream()
         .mapToInt(PlayerGameStat::getRedCards)
         .sum();
+    String playerName = service.getPlayer(playerId).getName();
+    String clubName = service.getClub(clubId).getName();
+    String seasonName = service.getSeason(seasonId).getName();
 
-    return new PlayerSeasonStat(playerId, playerGameStats, seasonId, clubId, games, starterGames, substituteGames, goals, assists, minutes, yellowCards, redCards);
+    return new PlayerSeasonStat(playerId, playerGameStats, seasonId, clubId, games,
+        starterGames, substituteGames, goals, assists, minutes, yellowCards, redCards, playerName, clubName, seasonName);
   }
 }

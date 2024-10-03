@@ -12,7 +12,9 @@ import football.StatsManagement.model.data.Country;
 import football.StatsManagement.model.data.League;
 import football.StatsManagement.model.data.Player;
 import football.StatsManagement.model.data.Season;
+import football.StatsManagement.model.domain.GameResultWithPlayerStats;
 import football.StatsManagement.model.domain.Standing;
+import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
 import football.StatsManagement.service.FootballService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -42,6 +44,14 @@ class FootballControllerTest {
 
   @MockBean
   private FootballService service;
+
+  @Test
+  @DisplayName("現在シーズンを取得できること")
+  void getCurrentSeason() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/seasons/current"))
+        .andExpect(status().isOk());
+    verify(service, times(1)).getCurrentSeason();
+  }
 
   @Test
   @DisplayName("IDを指定して国を取得できること")
@@ -163,7 +173,7 @@ class FootballControllerTest {
   @DisplayName("リーグIDとシーズンIDに紐づく順位表を取得できること")
   void getStanding() throws Exception {
     int leagueId = 1;
-    int seasonId = 1;
+    int seasonId = 100001;
     MockedStatic<Standing> standing = mockStatic(Standing.class);
     mockMvc.perform(MockMvcRequestBuilders.get("/leagues/" + leagueId + "/standings/" + seasonId))
         .andExpect(status().isOk());
@@ -204,7 +214,7 @@ class FootballControllerTest {
   @DisplayName("選手IDとシーズンIDに紐づく選手の試合成績を取得できること")
   void getPlayerGameStatsBySeason() throws Exception {
     int playerId = 1;
-    int seasonId = 1;
+    int seasonId = 100001;
     mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-game-stats/" + seasonId))
         .andExpect(status().isOk());
     verify(service, times(1)).getPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
@@ -226,7 +236,7 @@ class FootballControllerTest {
   @DisplayName("クラブIDとシーズンIDに紐づく選手のシーズン成績を取得できること")
   void getPlayerSeasonStatsByClubId() throws Exception {
     int clubId = 1;
-    int seasonId = 1;
+    int seasonId = 100001;
     mockMvc.perform(MockMvcRequestBuilders.get("/clubs/" + clubId + "/players-season-stats/" + seasonId))
         .andExpect(status().isOk());
     verify(service, times(1)).getPlayerSeasonStatsByClubId(clubId, seasonId);
@@ -248,7 +258,7 @@ class FootballControllerTest {
   @DisplayName("選手IDとシーズンIDに紐づく選手のシーズン成績を取得できること")
   void getPlayerSeasonStat() throws Exception {
     int playerId = 1;
-    int seasonId = 1;
+    int seasonId = 100001;
     mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stat/" + seasonId))
         .andExpect(status().isOk());
     verify(service, times(1)).getPlayerSeasonStatByPlayerId(playerId, seasonId);
@@ -503,7 +513,408 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("試合結果の登録ができること")
-  void registerGameResult() {
+  void registerGameResult() throws Exception {
+    // JSONリクエストボディの作成
+    String requestBody = """
+        {
+           "gameResult": {
+             "homeClubId": 1,
+             "awayClubId": 2,
+             "homeScore": 3,
+             "awayScore": 1,
+             "leagueId": 100,
+             "gameDate": "2024-10-01",
+             "seasonId": 202425
+           },
+           "homeClubPlayerGameStats": [
+             {
+               "playerId": 101,
+               "starter": true,
+               "goals": 1,
+               "assists": 0,
+               "minutes": 90,
+               "yellowCards": 0,
+               "redCards": 0
+             }
+           ],
+           "awayClubPlayerGameStats": [
+             {
+               "playerId": 201,
+               "starter": true,
+               "goals": 0,
+               "assists": 1,
+               "minutes": 90,
+               "yellowCards": 1,
+               "redCards": 0
+             }
+           ]
+         }
+        """;
+    mockMvc.perform(MockMvcRequestBuilders.post("/game-result")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isOk());
+    verify(service, times(2)).convertPlayerGameStatsForInsertToPlayerGameStats(any(List.class));
+    verify(service, times(1)).registerGameResultAndPlayerGameStats(any(GameResultWithPlayerStats.class));
+  }
+
+  @Test
+  @DisplayName("試合結果の登録の際にGameResult個別フィールドのバリデーションエラーが発生すること")
+  void registerGameResultWithInvalidGameResultFields() throws Exception {
+    // JSONリクエストボディの作成（GameResultのすべてのフィールドでバリデーションテスト無視）
+    String requestBody = """
+        {
+           "gameResult": {
+             "homeClubId": 0,
+             "awayClubId": -1,
+             "homeScore": -1,
+             "awayScore": -1,
+             "leagueId": 0,
+             "gameDate": null,
+             "seasonId": 0
+           },
+           "homeClubPlayerGameStats": [
+             {
+               "playerId": 101,
+               "starter": true,
+               "goals": 1,
+               "assists": 0,
+               "minutes": 90,
+               "yellowCards": 0,
+               "redCards": 0
+             }
+           ],
+           "awayClubPlayerGameStats": [
+             {
+               "playerId": 201,
+               "starter": true,
+               "goals": 0,
+               "assists": 1,
+               "minutes": 90,
+               "yellowCards": 1,
+               "redCards": 0
+             }
+           ]
+         }
+        """;
+    mockMvc.perform(MockMvcRequestBuilders.post("/game-result")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> {
+          MethodArgumentNotValidException ex = (MethodArgumentNotValidException) result.getResolvedException();
+          BindingResult bindingResult = ex.getBindingResult();
+          List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+
+          // バリデーションエラーをフィールドごとに期待されるメッセージをマップで定義
+          Map<String, String> expectedErrorMessages = Map.of(
+              "gameResult.homeClubId", "must be greater than 0",
+              "gameResult.awayClubId", "must be greater than 0",
+              "gameResult.homeScore", "must be greater than or equal to 0",
+              "gameResult.awayScore", "must be greater than or equal to 0",
+              "gameResult.leagueId", "must be greater than 0",
+              "gameResult.gameDate", "must not be null",
+              "gameResult.seasonId", "must be greater than or equal to 100000"
+          );
+
+          // エラーメッセージが予期したものか確認
+          assertEquals(expectedErrorMessages.size(), fieldErrors.size());
+
+          // フィールドエラーを検証
+          fieldErrors.forEach(fieldError -> {
+            String fieldName = fieldError.getField();
+            String expectedErrorMessage = expectedErrorMessages.get(fieldName);
+            assertNotNull(expectedErrorMessage, "Expected error message for field '" + fieldName + "' is null");
+            assertEquals(expectedErrorMessage, fieldError.getDefaultMessage());
+          });
+
+        });
+  }
+
+  @Test
+  @DisplayName("試合結果の登録の際にGameResultのAssertTrueバリデーションエラーが発生すること")
+  void registerGameResultWithInvalidGameResultAssertTrue() throws Exception {
+    // JSONリクエストボディの作成（homeClubIdとawayClubIdが同じ値）
+    String requestBody = """
+        {
+           "gameResult": {
+             "homeClubId": 1,
+             "awayClubId": 1,
+             "homeScore": 3,
+             "awayScore": 1,
+             "leagueId": 100,
+             "gameDate": "2024-10-01",
+             "seasonId": 202425
+           },
+           "homeClubPlayerGameStats": [
+             {
+               "playerId": 101,
+               "starter": true,
+               "goals": 1,
+               "assists": 0,
+               "minutes": 90,
+               "yellowCards": 0,
+               "redCards": 0
+             }
+           ],
+           "awayClubPlayerGameStats": [
+             {
+               "playerId": 201,
+               "starter": true,
+               "goals": 0,
+               "assists": 1,
+               "minutes": 90,
+               "yellowCards": 1,
+               "redCards": 0
+             }
+           ]
+         }
+        """;
+    mockMvc.perform(MockMvcRequestBuilders.post("/game-result")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> {
+          MethodArgumentNotValidException ex = (MethodArgumentNotValidException) result.getResolvedException();
+          BindingResult bindingResult = ex.getBindingResult();
+          List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+
+          // バリデーションエラーをフィールドごとに期待されるメッセージをマップで定義
+          Map<String, String> expectedErrorMessages = Map.of(
+              "gameResult.homeClubDifferentFromAwayClub", "Home club and away club must be different."
+          );
+
+          // エラーメッセージが予期したものか確認
+          assertEquals(expectedErrorMessages.size(), fieldErrors.size());
+
+          // フィールドエラーを検証
+          fieldErrors.forEach(fieldError -> {
+            String fieldName = fieldError.getField();
+            String expectedErrorMessage = expectedErrorMessages.get(fieldName);
+            assertNotNull(expectedErrorMessage,
+                "Expected error message for field '" + fieldName + "' is null");
+            assertEquals(expectedErrorMessage, fieldError.getDefaultMessage());
+          });
+        });
+  }
+
+
+
+  @Test
+  @DisplayName("試合結果の登録の際にPlayerGameStat個別フィールドのバリデーションエラーが発生すること")
+  void registerGameResultWithInvalidPlayerGameStatFieldsExceptMax() throws Exception {
+    // JSONリクエストボディの作成（homeClubPlayerGameStatsのすべてのフィールドでバリデーションテスト無視）
+    String requestBody = """
+        {
+           "gameResult": {
+             "homeClubId": 1,
+             "awayClubId": 2,
+             "homeScore": 3,
+             "awayScore": 1,
+             "leagueId": 100,
+             "gameDate": "2024-10-01",
+             "seasonId": 202425
+           },
+           "homeClubPlayerGameStats": [
+             {
+               "playerId": 0,
+               "starter": null,
+               "goals": -1,
+               "assists": -1,
+               "minutes": -1,
+               "yellowCards": -1,
+               "redCards": -1
+             }
+           ],
+           "awayClubPlayerGameStats": [
+             {
+               "playerId": 201,
+               "starter": true,
+               "goals": 0,
+               "assists": 1,
+               "minutes": 90,
+               "yellowCards": 1,
+               "redCards": 0
+             }
+           ]
+         }
+        """;
+    mockMvc.perform(MockMvcRequestBuilders.post("/game-result")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> {
+          MethodArgumentNotValidException ex = (MethodArgumentNotValidException) result.getResolvedException();
+          BindingResult bindingResult = ex.getBindingResult();
+          List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+
+          // バリデーションエラーをフィールドごとに期待されるメッセージをマップで定義
+          Map<String, String> expectedErrorMessages = Map.of(
+              "homeClubPlayerGameStats[0].playerId", "must be greater than 0",
+              "homeClubPlayerGameStats[0].goals", "must be greater than or equal to 0",
+              "homeClubPlayerGameStats[0].assists", "must be greater than or equal to 0",
+              "homeClubPlayerGameStats[0].minutes", "must be greater than or equal to 0",
+              "homeClubPlayerGameStats[0].yellowCards", "must be greater than or equal to 0",
+              "homeClubPlayerGameStats[0].redCards", "must be greater than or equal to 0"
+          );
+
+          // エラーメッセージが予期したものか確認
+          assertEquals(expectedErrorMessages.size(), fieldErrors.size());
+
+          // フィールドエラーを検証
+          fieldErrors.forEach(fieldError -> {
+            String fieldName = fieldError.getField();
+            String expectedErrorMessage = expectedErrorMessages.get(fieldName);
+            assertNotNull(expectedErrorMessage,
+                "Expected error message for field '" + fieldName + "' is null");
+            assertEquals(expectedErrorMessage, fieldError.getDefaultMessage());
+          });
+        });
+  }
+
+  @Test
+  @DisplayName("試合結果の登録の際にPlayerGameStatの最大値バリデーションエラーが発生すること")
+  void registerGameResultWithInvalidPlayerGameStatFieldsMax() throws Exception {
+    // JSONリクエストボディの作成（homeClubPlayerGameStatsのすべてのフィールドでバリデーションテスト無視）
+    String requestBody = """
+        {
+           "gameResult": {
+             "homeClubId": 1,
+             "awayClubId": 2,
+             "homeScore": 3,
+             "awayScore": 1,
+             "leagueId": 100,
+             "gameDate": "2024-10-01",
+             "seasonId": 202425
+           },
+           "homeClubPlayerGameStats": [
+             {
+               "playerId": 1,
+               "starter": true,
+               "goals": 1,
+               "assists": 1,
+               "minutes": 100,
+               "yellowCards": 10,
+               "redCards": 10
+             }
+           ],
+           "awayClubPlayerGameStats": [
+             {
+               "playerId": 201,
+               "starter": true,
+               "goals": 0,
+               "assists": 1,
+               "minutes": 90,
+               "yellowCards": 1,
+               "redCards": 0
+             }
+           ]
+         }
+        """;
+    mockMvc.perform(MockMvcRequestBuilders.post("/game-result")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> {
+          MethodArgumentNotValidException ex = (MethodArgumentNotValidException) result.getResolvedException();
+          BindingResult bindingResult = ex.getBindingResult();
+          List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+
+          // バリデーションエラーをフィールドごとに期待されるメッセージをマップで定義
+          Map<String, String> expectedErrorMessages = Map.of(
+              "homeClubPlayerGameStats[0].minutes", "must be less than or equal to 90",
+              "homeClubPlayerGameStats[0].yellowCards", "must be less than or equal to 2",
+              "homeClubPlayerGameStats[0].redCards", "must be less than or equal to 1"
+          );
+
+          // エラーメッセージが予期したものか確認
+          assertEquals(expectedErrorMessages.size(), fieldErrors.size());
+
+          // フィールドエラーを検証
+          fieldErrors.forEach(fieldError -> {
+            String fieldName = fieldError.getField();
+            String expectedErrorMessage = expectedErrorMessages.get(fieldName);
+            assertNotNull(expectedErrorMessage,
+                "Expected error message for field '" + fieldName + "' is null");
+            assertEquals(expectedErrorMessage, fieldError.getDefaultMessage());
+          });
+        });
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "true, 0, 0, 0, 0", // starter
+      "false, 1, 0, 0, 0", // goals
+      "false, 0, 1, 0, 0", // assists
+      "false, 0, 0, 1, 0", // yellowCards
+      "false, 0, 0, 0, 1" // redCards
+  })
+  @DisplayName("試合結果の登録の際にPlayerGameStatのAssertTrueバリデーションエラーが発生すること")
+  void registerGameResultWithInvalidPlayerGameStatAssertTrue(
+      boolean starter, int goals, int assists, int yellowCards, int redCards
+  ) throws Exception {
+    // JSONリクエストボディの作成（homeClubPlayerGameStatsのplayerIdとminutes以外がCsvSourceの値）
+    String requestBody = String.format("""
+        {
+           "gameResult": {
+             "homeClubId": 1,
+             "awayClubId": 2,
+             "homeScore": 3,
+             "awayScore": 1,
+             "leagueId": 100,
+             "gameDate": "2024-10-01",
+             "seasonId": 202425
+           },
+           "homeClubPlayerGameStats": [
+             {
+               "playerId": 1,
+               "starter": %b,
+               "goals": %d,
+               "assists": %d,
+               "minutes": 0,
+               "yellowCards": %d,
+               "redCards": %d
+             }
+           ],
+           "awayClubPlayerGameStats": [
+             {
+               "playerId": 201,
+               "starter": true,
+               "goals": 0,
+               "assists": 1,
+               "minutes": 90,
+               "yellowCards": 1,
+               "redCards": 0
+             }
+           ]
+         }
+        """, starter, goals, assists, yellowCards, redCards);
+    mockMvc.perform(MockMvcRequestBuilders.post("/game-result")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> {
+          MethodArgumentNotValidException ex = (MethodArgumentNotValidException) result.getResolvedException();
+          BindingResult bindingResult = ex.getBindingResult();
+          List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+
+          // バリデーションエラーをフィールドごとに期待されるメッセージをマップで定義
+          Map<String, String> expectedErrorMessages = Map.of(
+              "homeClubPlayerGameStats[0].minutesZero", "If minutes is 0, stats must be 0, and the player must not be a starter."
+          );
+
+          // エラーメッセージが予期したものか確認
+          assertEquals(expectedErrorMessages.size(), fieldErrors.size());
+
+          // フィールドエラーを検証
+          fieldErrors.forEach(fieldError -> {
+            String fieldName = fieldError.getField();
+            String expectedErrorMessage = expectedErrorMessages.get(fieldName);
+            assertNotNull(expectedErrorMessage,
+                "Expected error message for field '" + fieldName + "' is null");
+            assertEquals(expectedErrorMessage, fieldError.getDefaultMessage());
+          });
+        });
   }
 
   @Test
@@ -514,7 +925,7 @@ class FootballControllerTest {
         {
           "name": "2024-25",
           "startDate": "2024-07-01",
-          "endDate": "2025-06-30"    
+          "endDate": "2025-06-30"
         }
         """;
     mockMvc.perform(MockMvcRequestBuilders.post("/season")
@@ -567,7 +978,6 @@ class FootballControllerTest {
           assertTrue(startDateErrorPresent);  // startDateのエラーがあることを確認
           assertTrue(endDateErrorPresent);  // endDateのエラーがあることを確認
         });
-
   }
 
   @Test

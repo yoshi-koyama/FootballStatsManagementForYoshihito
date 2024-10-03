@@ -107,7 +107,7 @@ class FootballServiceTest {
   @Test
   @DisplayName("試合結果が登録できる_リポジトリが適切に処理されること")
   void registerGameResult() {
-    GameResultForJson gameResultForJson = new GameResultForJson(1, 1, 1, 1, 1, 1, LocalDate.now(), 1);
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 1, 1, 1, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     sut.registerGameResult(gameResult);
     verify(repository, times(1)).insertGameResult(gameResult);
@@ -459,10 +459,228 @@ class FootballServiceTest {
   }
 
   @Test
-  @DisplayName("試合結果と選手成績の登録_リポジトリが適切に処理されること")
-  void registerGameResultAndPlayerGameStats() {
-    // 現状テスト項目なし
+  @DisplayName("試合結果と選手成績の登録_ホームクラブのスコアが不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidHomeScore() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
+    GameResult gameResult = new GameResult(gameResultForJson);
+    // ホームクラブのスコアが不正な値になるようにする
+    List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
+        new PlayerGameStatForJson(1, true, 2, 2, 1, 1, 1)
+    );
+    List<PlayerGameStat> homeClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForJson);
+    List<PlayerGameStatForJson> awayClubStatsForJson = List.of(
+        new PlayerGameStatForJson(2, false, 2, 2, 1, 1, 1)
+    );
+    List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Home score is not correct", thrown.getMessage());
   }
+
+  @Test
+  @DisplayName("試合結果と選手成績の登録_アウェイクラブのスコアが不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidAwayScore() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
+    GameResult gameResult = new GameResult(gameResultForJson);
+    List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
+        new PlayerGameStatForJson(1, true, 1, 2, 1, 1, 1)
+    );
+    List<PlayerGameStat> homeClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForJson);
+    // アウェイクラブのスコアが不正な値になるようにする
+    List<PlayerGameStatForJson> awayClubStatsForJson = List.of(
+        new PlayerGameStatForJson(2, false, 2, 2, 1, 1, 1)
+    );
+    List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Away score is not correct", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("試合結果と選手成績の登録_ホームクラブのアシスト数が不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidHomeAssist() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
+    GameResult gameResult = new GameResult(gameResultForJson);
+    // ホームクラブのアシストが不正な値になるようにする
+    List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
+        new PlayerGameStatForJson(1, true, 1, 2, 1, 1, 1)
+    );
+    List<PlayerGameStat> homeClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForJson);
+    List<PlayerGameStatForJson> awayClubStatsForJson = List.of(
+        new PlayerGameStatForJson(2, false, 1, 2, 1, 1, 1)
+    );
+    List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Home assists is more than home score", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("試合結果と選手成績の登録_アウェイクラブのアシスト数が不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidAwayAssist() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
+    GameResult gameResult = new GameResult(gameResultForJson);
+    List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
+        new PlayerGameStatForJson(1, true, 1, 1, 1, 1, 1)
+    );
+    List<PlayerGameStat> homeClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForJson);
+    // ホームクラブのアシストが不正な値になるようにする
+    List<PlayerGameStatForJson> awayClubStatsForJson = List.of(
+        new PlayerGameStatForJson(2, false, 1, 2, 1, 1, 1)
+    );
+    List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Away assists is more than away score", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("試合結果と選手成績の登録_ホームクラブの先発選手数が不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidHomeStarting() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
+    GameResult gameResult = new GameResult(gameResultForJson);
+    // ホームクラブの先発選手数が不正な値になるようにする
+    List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
+        new PlayerGameStatForJson(1, true, 1, 1, 2, 1, 1)
+    );
+    List<PlayerGameStat> homeClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForJson);
+    List<PlayerGameStatForJson> awayClubStatsForJson = List.of(
+        new PlayerGameStatForJson(2, false, 1, 1, 1, 1, 1)
+    );
+    List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Home starter count is not correct", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("試合結果と選手成績の登録_アウェイクラブの先発選手数が不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidAwayStarting() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 11, 12, 1, LocalDate.now(), 1);
+    GameResult gameResult = new GameResult(gameResultForJson);
+    List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
+        new PlayerGameStatForJson(1, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(2, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(3, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(4, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(5, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(6, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(7, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(8, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(9, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(10, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(11, true, 1, 1, 1, 1, 1)
+    );
+    List<PlayerGameStat> homeClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForJson);
+    // アウェイクラブの先発選手数が不正な値になるようにする
+    List<PlayerGameStatForJson> awayClubStatsForJson = List.of(
+        new PlayerGameStatForJson(12, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(13, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(14, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(15, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(16, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(17, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(18, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(19, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(20, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(21, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(22, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(23, true, 1, 1, 2, 1, 1)
+    );
+    List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Away starter count is not correct", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("試合結果と選手成績の登録_ホームクラブの出場時間が不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidHomeMinutes() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 11, 11, 1, LocalDate.now(), 1);
+    GameResult gameResult = new GameResult(gameResultForJson);
+    // ホームクラブの出場時間が不正な値になるようにする
+    List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
+        new PlayerGameStatForJson(1, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(2, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(3, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(4, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(5, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(6, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(7, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(8, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(9, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(10, true, 1, 1, 1, 1, 1),
+        new PlayerGameStatForJson(11, true, 1, 1, 1, 1, 1)
+    );
+    List<PlayerGameStat> homeClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForJson);
+    List<PlayerGameStatForJson> awayClubStatsForJson = List.of(
+        new PlayerGameStatForJson(12, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(13, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(14, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(15, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(16, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(17, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(18, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(19, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(20, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(21, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(22, true, 1, 1, 2, 1, 1)
+    );
+    List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Home minutes is not correct", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("試合結果と選手成績の登録_アウェイクラブの出場時間が不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidAwayMinutes() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 11, 11, 1, LocalDate.now(), 1);
+    GameResult gameResult = new GameResult(gameResultForJson);
+    List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
+        new PlayerGameStatForJson(1, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(2, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(3, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(4, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(5, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(6, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(7, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(8, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(9, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(10, true, 1, 1, 90, 1, 1),
+        new PlayerGameStatForJson(11, true, 1, 1, 90, 1, 1)
+    );
+    List<PlayerGameStat> homeClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(homeClubStatsForJson);
+    // アウェイクラブの出場時間が不正な値になるようにする
+    List<PlayerGameStatForJson> awayClubStatsForJson = List.of(
+        new PlayerGameStatForJson(12, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(13, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(14, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(15, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(16, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(17, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(18, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(19, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(20, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(21, true, 1, 1, 2, 1, 1),
+        new PlayerGameStatForJson(22, true, 1, 1, 2, 1, 1)
+    );
+    List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Away minutes is not correct", thrown.getMessage());
+  }
+
+
+
 
   @Test
   @DisplayName("日付の型変換_リポジトリが適切に処理されること")
@@ -509,5 +727,23 @@ class FootballServiceTest {
     when(repository.selectCurrentSeason()).thenReturn(Optional.empty());
     // 例外が投げられることを確認
     assertThrows(ResourceNotFoundException.class, () -> sut.getCurrentSeason());
+  }
+
+  @Test
+  @DisplayName("IDを指定してシーズンの取得ができること")
+  void getSeason() throws ResourceNotFoundException {
+    Season season = new Season(200001, "2000-01", LocalDate.of(2000, 7, 1), LocalDate.of(2001, 6, 30), true);
+    when(repository.selectSeason(200001)).thenReturn(Optional.of(season));
+    Season actual = sut.getSeason(200001);
+    verify(repository, times(1)).selectSeason(200001);
+  }
+
+  @Test
+  @DisplayName("IDを指定してシーズンの取得ができること_存在しない場合に適切に例外処理されること")
+  void getSeason_withNotFound() {
+    // リポジトリが空の状態を作る
+    when(repository.selectSeason(200001)).thenReturn(Optional.empty());
+    // 例外が投げられることを確認
+    assertThrows(ResourceNotFoundException.class, () -> sut.getSeason(200001));
   }
 }
