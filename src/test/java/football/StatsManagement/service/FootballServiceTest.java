@@ -296,7 +296,7 @@ class FootballServiceTest {
   @Test
   @DisplayName("IDによる選手試合成績の検索_リポジトリが適切に処理されること")
   void getPlayerGameStat() throws ResourceNotFoundException {
-    PlayerGameStat playerGameStat = new PlayerGameStat(1, 1, 1, 1, 1, true, 1, 1, 1, 1, 1);
+    PlayerGameStat playerGameStat = new PlayerGameStat(1, 1, 1, 1, true, 1, 1, 1, 1, 1, 1);
     when(repository.selectPlayerGameStat(1)).thenReturn(Optional.of(playerGameStat));
     PlayerGameStat actual = sut.getPlayerGameStat(1);
     verify(repository, times(1)).selectPlayerGameStat(1);
