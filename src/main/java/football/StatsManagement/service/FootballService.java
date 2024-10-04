@@ -125,8 +125,6 @@ public class FootballService {
     }
     // ここまで確認フェーズ、以降は登録処理
     updateSeasonsCurrentFalse();
-    // seasonIdをnameから-を取り除いたものに設定
-    season.setId(Integer.parseInt(season.getName().replace("-", "")));
     repository.insertSeason(season);
   }
 
@@ -438,9 +436,6 @@ public class FootballService {
 
     // スタッツの整合性を確認
     confirmGameResultAndPlayerGameStats(gameResultWithPlayerStats, homeClubStats, awayClubStats);
-
-    // 勝者を設定
-    gameResult.setWinnerClubId(getWinnerClubId(gameResult));
 
 //    試合結果を登録
     registerGameResult(gameResult);

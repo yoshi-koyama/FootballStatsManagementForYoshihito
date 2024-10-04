@@ -55,7 +55,7 @@ public interface FootballRepository {
    * Insert a player game stat
    * @param playerGameStats
    */
-  @Insert("INSERT INTO player_game_stats (player_id, club_id, starter, goals, assists, minutes, yellow_cards, red_cards, game_date) VALUES (#{playerId}, #{clubId}, #{starter}, #{goals}, #{assists}, #{minutes}, #{yellowCards}, #{redCards}, #{gameDate})")
+  @Insert("INSERT INTO player_game_stats (player_id, club_id, number, starter, goals, assists, minutes, yellow_cards, red_cards, game_id) VALUES (#{playerId}, #{clubId}, #{number}, #{starter}, #{goals}, #{assists}, #{minutes}, #{yellowCards}, #{redCards}, #{gameId})")
   @Options(useGeneratedKeys = true, keyProperty = "id")
   void insertPlayerGameStat(PlayerGameStat playerGameStats);
 
@@ -63,7 +63,7 @@ public interface FootballRepository {
    * Insert a game result
    * @param gameResult
    */
-  @Insert("INSERT INTO game_results (home_club_id, away_club_id, home_score, away_score, winner_club_id, league_id, game_date) VALUES (#{homeClubId}, #{awayClubId}, #{homeScore}, #{awayScore}, #{winnerClubId}, #{leagueId}, #{gameDate})")
+  @Insert("INSERT INTO game_results (home_club_id, away_club_id, home_score, away_score, winner_club_id, league_id, game_date, season_id) VALUES (#{homeClubId}, #{awayClubId}, #{homeScore}, #{awayScore}, #{winnerClubId}, #{leagueId}, #{gameDate}, #{seasonId})")
   @Options(useGeneratedKeys = true, keyProperty = "id")
   void insertGameResult(GameResult gameResult);
 
@@ -71,7 +71,7 @@ public interface FootballRepository {
    * Insert a season
    * @param season
    */
-  @Insert("INSERT INTO seasons (id, name, start_date, end_date) VALUES (#{id}, #{name}, #{startDate}, #{endDate})")
+  @Insert("INSERT INTO seasons (id, name, start_date, end_date, current) VALUES (#{id}, #{name}, #{startDate}, #{endDate}, #{current})")
   @Options( keyProperty = "id")
   void insertSeason(Season season);
 
@@ -173,6 +173,41 @@ public interface FootballRepository {
   List<Country> selectCountries();
 
   /**
+   * Select all leagues
+   * @return
+   */
+  @Select("SELECT * FROM leagues")
+  List<League> selectLeagues();
+
+  /**
+   * Select all clubs
+   * @return
+   */
+  @Select("SELECT * FROM clubs")
+  List<Club> selectClubs();
+
+  /**
+   * Select all players
+   * @return
+   */
+  @Select("SELECT * FROM players")
+  List<Player> selectPlayers();
+
+  /**
+   * Select all game results
+   * @return
+   */
+  @Select("SELECT * FROM game_results")
+  List<GameResult> selectGameResults();
+
+  /**
+   * Select all player game stats
+   * @return
+   */
+  @Select("SELECT * FROM player_game_stats")
+  List<PlayerGameStat> selectPlayerGameStats();
+
+  /**
    * Select all seasons
    * @return
    */
@@ -193,14 +228,27 @@ public interface FootballRepository {
    * @param seasonId
    * @return
    */
-  @Select("SELECT * FROM player_game_stats pgs JOIN game_results gr ON pgs.game_id = gr.id WHERE gr.season_id = #{seasonId} AND pgs.player_id = #{playerId}")
+  @Select("SELECT pgs.id AS id, " +
+      "pgs.player_id AS playerId, " +
+      "pgs.club_id AS clubId, " +
+      "pgs.number AS number, " +
+      "pgs.starter AS starter, " +
+      "pgs.goals AS goals, " +
+      "pgs.assists AS assists, " +
+      "pgs.minutes AS minutes, " +
+      "pgs.yellow_cards AS yellowCards, " +
+      "pgs.red_cards AS redCards, " +
+      "pgs.game_id AS gameId " +
+      "FROM player_game_stats pgs " +
+      "JOIN game_results gr ON pgs.game_id = gr.id " +
+      "WHERE gr.season_id = #{seasonId} AND pgs.player_id = #{playerId}")
   List<PlayerGameStat> selectPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId);
 
   /**
    * Select current season
    * @return
    */
-  @Select("SELECT * FROM seasons WHERE current = true")
+  @Select("SELECT * FROM seasons WHERE current = 1")
   Optional<Season> selectCurrentSeason();
 
   /**

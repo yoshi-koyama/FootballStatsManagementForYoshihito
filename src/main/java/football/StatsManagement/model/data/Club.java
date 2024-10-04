@@ -1,6 +1,7 @@
 package football.StatsManagement.model.data;
 
 import football.StatsManagement.model.domain.json.ClubForJson;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,5 +19,25 @@ public class Club {
     this.id = 0;
     this.leagueId = clubForJson.getLeagueId();
     this.name = clubForJson.getName();
+  }
+
+  // テスト用にequalsとhashCodeをオーバーライド
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    Club club = (Club) obj;
+    return id == club.id &&
+        leagueId == club.leagueId &&
+        Objects.equals(name, club.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, leagueId, name);
   }
 }

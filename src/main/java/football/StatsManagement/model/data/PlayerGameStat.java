@@ -1,6 +1,7 @@
 package football.StatsManagement.model.data;
 
 import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor // @Select用
 public class PlayerGameStat {
   private final int id;
-  private int gameId;
   // この時点でのクラブと背番号は確定させる
   private int playerId;
   private int clubId;
@@ -22,6 +22,8 @@ public class PlayerGameStat {
   private int minutes;
   private int yellowCards;
   private int redCards;
+  // テスト用Inset文の都合上順序は最後に変更
+  private int gameId;
 
   // @Insert用
   public PlayerGameStat(PlayerGameStatForJson playerGameStatForJson) {
@@ -42,5 +44,33 @@ public class PlayerGameStat {
     this.gameId = gameId;
     this.clubId = clubId;
     this.number = number;
+  }
+
+  // テスト用にequalsとhashCodeをオーバーライド
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    PlayerGameStat playerGameStat = (PlayerGameStat) obj;
+    return id == playerGameStat.id &&
+        gameId == playerGameStat.gameId &&
+        playerId == playerGameStat.playerId &&
+        clubId == playerGameStat.clubId &&
+        number == playerGameStat.number &&
+        starter == playerGameStat.starter &&
+        goals == playerGameStat.goals &&
+        assists == playerGameStat.assists &&
+        minutes == playerGameStat.minutes &&
+        yellowCards == playerGameStat.yellowCards &&
+        redCards == playerGameStat.redCards;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, gameId, playerId, clubId, number, starter, goals, assists, minutes, yellowCards, redCards);
   }
 }
