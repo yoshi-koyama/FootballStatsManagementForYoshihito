@@ -4,6 +4,7 @@ import football.StatsManagement.service.FootballService;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.GameResult;
 import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -89,9 +90,9 @@ public class ClubForStanding {
   }
 
   // 2クラブ間の成績比較のためのメソッド
-  public int getPointsAgainst(ClubForStanding clubAgainst) {
+  public int getPointsAgainst(int idOfClubAgainst) {
     List<GameResult> gameResults = this.getGameResults().stream()
-        .filter(gameResult -> gameResult.getHomeClubId() == clubAgainst.getClub().getId() || gameResult.getAwayClubId() == clubAgainst.getClub().getId())
+        .filter(gameResult -> gameResult.getHomeClubId() == idOfClubAgainst || gameResult.getAwayClubId() == idOfClubAgainst)
         .toList();
     int pointsAgainst = 0;
     for (GameResult gameResult : gameResults) {
@@ -104,33 +105,55 @@ public class ClubForStanding {
     return pointsAgainst;
   }
 
-  public int getGoalDifferencesAgainst(ClubForStanding clubAgainst) {
+  public int getGoalDifferencesAgainst(int idOfClubAgainst) {
     int differencesAgainst = 0;
     for (GameResult gameResult : this.getGameResults()) {
-      if (gameResult.getHomeClubId() == clubAgainst.getClub().getId()) {
+      if (gameResult.getHomeClubId() == idOfClubAgainst) {
         differencesAgainst += gameResult.getAwayScore() - gameResult.getHomeScore();
-      } else if (gameResult.getAwayClubId() == clubAgainst.getClub().getId()) {
+      } else if (gameResult.getAwayClubId() == idOfClubAgainst) {
         differencesAgainst += gameResult.getHomeScore() - gameResult.getAwayScore();
       }
     }
     return differencesAgainst;
   }
 
-  public int getAwayGoalsAgainst(ClubForStanding clubAgainst) {
-    int awayGoalsAgainst = 0;
-    for (GameResult gameResult : this.getGameResults()) {
-      if (gameResult.getHomeClubId() == clubAgainst.getClub().getId()) {
-        awayGoalsAgainst += gameResult.getAwayScore();
-      } else if (gameResult.getAwayClubId() == clubAgainst.getClub().getId()) {
-        awayGoalsAgainst += gameResult.getHomeScore();
-      }
-    }
+  public int getAwayGoalsAgainst(int idOfClubAgainst) {
+    int awayGoalsAgainst = this.getGameResults().stream()
+        .filter(gameResult -> gameResult.getHomeClubId() == idOfClubAgainst)
+        .mapToInt(GameResult::getAwayScore).sum();
     return awayGoalsAgainst;
   }
 
-  public int getGamesAgainst(ClubForStanding clubAgainst) {
+  public int getGamesAgainst(int idOfClubAgainst) {
     return (int) this.getGameResults().stream()
-        .filter(gameResult -> gameResult.getHomeClubId() == clubAgainst.getClub().getId() || gameResult.getAwayClubId() == clubAgainst.getClub().getId())
+        .filter(gameResult -> gameResult.getHomeClubId() == idOfClubAgainst || gameResult.getAwayClubId() == idOfClubAgainst)
         .count();
+  }
+
+
+  // テスト用にequalsとhashCodeをoverride
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    ClubForStanding that = (ClubForStanding) o;
+
+    return position == that.position &&
+        gamesPlayed == that.gamesPlayed &&
+        wins == that.wins &&
+        draws == that.draws &&
+        losses == that.losses &&
+        points == that.points &&
+        goalsFor == that.goalsFor &&
+        goalsAgainst == that.goalsAgainst &&
+        goalDifference == that.goalDifference &&
+        gameResults.equals(that.gameResults) &&
+        club.equals(that.club);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(gameResults, club, gamesPlayed, wins, draws, losses, points, goalsFor, goalsAgainst, goalDifference, position);
   }
 }
