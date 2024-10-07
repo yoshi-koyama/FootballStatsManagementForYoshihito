@@ -5,11 +5,13 @@ import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.GameResult;
 import java.util.List;
 import java.util.Objects;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor // テスト用に追加
 public class ClubForStanding {
 
   private final List<GameResult> gameResults;
