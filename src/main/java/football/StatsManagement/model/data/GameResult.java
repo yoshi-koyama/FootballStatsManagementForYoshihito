@@ -16,7 +16,7 @@ public class GameResult {
   private int awayClubId;
   private int homeScore;
   private int awayScore;
-  private int winnerClubId; // 0 if draw
+  private Integer winnerClubId; // null if draw、外部キー制約のため0→nullに変更
   private int leagueId;
   private LocalDate gameDate;
   private int seasonId;
@@ -33,7 +33,7 @@ public class GameResult {
     } else if (homeScore < awayScore) {
       this.winnerClubId = awayClubId;
     } else {
-      this.winnerClubId = 0;
+      this.winnerClubId = null;
     }
     this.leagueId = gameResultForJson.getLeagueId();
     this.gameDate = gameResultForJson.getGameDate();

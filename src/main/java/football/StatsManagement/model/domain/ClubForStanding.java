@@ -58,6 +58,9 @@ public class ClubForStanding {
   private static int getWins(List<GameResult> gameResults, int clubId) {
     int wins = 0;
     for (GameResult gameResult : gameResults) {
+      if (gameResult.getWinnerClubId() == null) {
+        continue;
+      }
       wins += gameResult.getWinnerClubId() == clubId ? 1 : 0;
     }
     return wins;
@@ -66,7 +69,7 @@ public class ClubForStanding {
   private static int getDraws(List<GameResult> gameResults) {
     int draws = 0;
     for (GameResult gameResult : gameResults) {
-      draws += gameResult.getWinnerClubId() == 0 ? 1 : 0;
+      draws += gameResult.getWinnerClubId() == null ? 1 : 0;
     }
     return draws;
   }
@@ -96,10 +99,10 @@ public class ClubForStanding {
         .toList();
     int pointsAgainst = 0;
     for (GameResult gameResult : gameResults) {
-      if (gameResult.getWinnerClubId() == this.getClub().getId()) {
-        pointsAgainst += 3;
-      } else if (gameResult.getWinnerClubId() == 0) {
+      if (gameResult.getWinnerClubId() == null) {
         pointsAgainst += 1;
+      } else if (gameResult.getWinnerClubId() == this.getClub().getId()) {
+        pointsAgainst += 3;
       }
     }
     return pointsAgainst;

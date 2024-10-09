@@ -164,8 +164,8 @@ class FootballRepositoryTest {
     int clubId = 1;
     List<GameResult> actual = sut.selectGameResultsByClubAndSeason(seasonId, clubId);
     List<GameResult> expected = List.of(
-        new GameResult(1, 1, 2, 2, 1, 1, 1, LocalDate.of(2019, 8, 1), 1),
-        new GameResult(3, 2, 1, 2, 2, 0, 1, LocalDate.of(2019, 8, 2), 1)
+        new GameResult(1, 1, 2, 2, 1, 1   , 1, LocalDate.of(2019, 8, 1), 1),
+        new GameResult(3, 2, 1, 2, 2, null, 1, LocalDate.of(2019, 8, 2), 1)
     );
     assertThat(actual.size()).isEqualTo(expected.size());
     assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
@@ -319,12 +319,12 @@ class FootballRepositoryTest {
     *
     * */
     List<GameResult> expected = List.of(
-        new GameResult(1, 1, 2, 2, 1, 1, 1, LocalDate.of(2019, 8, 1), 1),
-        new GameResult(2, 3, 4, 1, 2, 4, 2, LocalDate.of(2019, 8, 1), 1),
-        new GameResult(3, 2, 1, 2, 2, 0, 1, LocalDate.of(2019, 8, 2), 1),
-        new GameResult(4, 1, 2, 1, 2, 2, 1, LocalDate.of(2020, 8, 3), 2),
-        new GameResult(5, 3, 4, 2, 1, 3, 2, LocalDate.of(2020, 8, 3), 2),
-        new GameResult(6, 3, 4, 1, 1, 0, 2, LocalDate.of(2020, 8, 4), 2)
+        new GameResult(1, 1, 2, 2, 1, 1   , 1, LocalDate.of(2019, 8, 1), 1),
+        new GameResult(2, 3, 4, 1, 2, 4,    2, LocalDate.of(2019, 8, 1), 1),
+        new GameResult(3, 2, 1, 2, 2, null, 1, LocalDate.of(2019, 8, 2), 1),
+        new GameResult(4, 1, 2, 1, 2, 2   , 1, LocalDate.of(2020, 8, 3), 2),
+        new GameResult(5, 3, 4, 2, 1, 3   , 2, LocalDate.of(2020, 8, 3), 2),
+        new GameResult(6, 3, 4, 1, 1, null, 2, LocalDate.of(2020, 8, 4), 2)
     );
     assertThat(actual.size()).isEqualTo(expected.size());
     assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
