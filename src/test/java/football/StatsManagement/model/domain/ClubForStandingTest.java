@@ -27,11 +27,11 @@ class ClubForStandingTest {
     int seasonId = 1;
     Club club = new Club(1, 1, "Sample Club");
     List<GameResult> gameResults = List.of(
-        new GameResult(1, 1, 2, 1, 1, 0, 1, LocalDate.now(), 1),
-        new GameResult(2, 2, 1, 1, 0, 2, 1, LocalDate.now(), 1),
-        new GameResult(3, 1, 3, 2, 0, 1, 1, LocalDate.now(), 1),
-        new GameResult(4, 1, 2, 2, 0, 1, 1, LocalDate.now(), 1),
-        new GameResult(5, 2, 1, 1, 3, 1, 1, LocalDate.now(), 1)
+        new GameResult(1, 1, 2, 1, 1, null, 1, LocalDate.now(), 1),
+        new GameResult(2, 2, 1, 1, 0, 2   , 1, LocalDate.now(), 1),
+        new GameResult(3, 1, 3, 2, 0, 1   , 1, LocalDate.now(), 1),
+        new GameResult(4, 1, 2, 2, 0, 1   , 1, LocalDate.now(), 1),
+        new GameResult(5, 2, 1, 1, 3, 1   , 1, LocalDate.now(), 1)
     );
     when(service.getGameResultsByClubAndSeason(seasonId, club.getId())).thenReturn(gameResults);
     // Act
@@ -47,11 +47,11 @@ class ClubForStandingTest {
     // Arrange
     Club club = new Club(1, 1, "Sample Club");
     List<GameResult> gameResults = List.of(
-        new GameResult(1, 1, 2, 1, 1, 0, 1, LocalDate.now(), 1),
-        new GameResult(2, 2, 1, 1, 0, 2, 1, LocalDate.now(), 1),
-        new GameResult(3, 1, 3, 2, 0, 1, 1, LocalDate.now(), 1),
-        new GameResult(4, 1, 2, 2, 0, 1, 1, LocalDate.now(), 1),
-        new GameResult(5, 2, 1, 1, 3, 1, 1, LocalDate.now(), 1)
+        new GameResult(1, 1, 2, 1, 1, null, 1, LocalDate.now(), 1),
+        new GameResult(2, 2, 1, 1, 0, 2   , 1, LocalDate.now(), 1),
+        new GameResult(3, 1, 3, 2, 0, 1   , 1, LocalDate.now(), 1),
+        new GameResult(4, 1, 2, 2, 0, 1   , 1, LocalDate.now(), 1),
+        new GameResult(5, 2, 1, 1, 3, 1   , 1, LocalDate.now(), 1)
     );
     ClubForStanding clubForStanding = new ClubForStanding(gameResults, club, 5, 3, 1, 1, 10, 8, 3, 5);
     // Act
