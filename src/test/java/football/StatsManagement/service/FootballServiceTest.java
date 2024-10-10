@@ -405,6 +405,28 @@ class FootballServiceTest {
   }
 
   @Test
+  @DisplayName("クラブの更新_リポジトリが適切に処理されること")
+  void updateClub() throws ResourceNotFoundException {
+    ClubForJson clubForJson = new ClubForJson(1, "sampleName");
+    Club club = new Club(clubForJson);
+    when(repository.selectClub(club.getId())).thenReturn(Optional.of(new Club(1, 1, "oldName")));
+    sut.updateClub(club);
+    verify(repository, times(1)).selectClub(club.getId());
+    verify(repository, times(1)).updateClub(club);
+  }
+
+  @Test
+  @DisplayName("クラブの更新_更新対象のクラブが存在しない場合に適切に例外処理されること")
+  void updateClub_withNotFound() {
+    ClubForJson clubForJson = new ClubForJson(1, "sampleName");
+    Club club = new Club(clubForJson);
+    // リポジトリが空の状態を作る
+    when(repository.selectClub(club.getId())).thenReturn(Optional.empty());
+    // 例外が投げられることを確認
+    assertThrows(ResourceNotFoundException.class, () -> sut.updateClub(club));
+  }
+
+  @Test
   @DisplayName("選手とシーズンによる選手試合成績の検索_リポジトリが適切に処理されること")
   void getPlayerGameStatsByPlayerAndSeason() throws ResourceNotFoundException {
     when(repository.selectPlayer(1)).thenReturn(Optional.of(new Player(1, 1, "sampleName", 1)));

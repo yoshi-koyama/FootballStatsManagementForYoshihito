@@ -37,16 +37,16 @@ INSERT INTO players (name, club_id, number) VALUES
   ('PlayerBBBB', 8, 2);
 
 INSERT INTO seasons (id, name, start_date, end_date, current) VALUES
-  (1, '2019-20', '2019-07-01', '2020-06-30', 0),
-  (2, '2020-21', '2020-07-01', '2021-06-30', 1);
+  (201920, '2019-20', '2019-07-01', '2020-06-30', 0),
+  (202021, '2020-21', '2020-07-01', '2021-06-30', 1);
 
 INSERT INTO game_results (home_club_id, away_club_id, home_score, away_score, winner_club_id, league_id, game_date, season_id) VALUES
-  (1, 2, 2, 1, 1   , 1, '2019-08-01', 1),
-  (3, 4, 1, 2, 4   , 2, '2019-08-01', 1),
-  (2, 1, 2, 2, null, 1, '2019-08-02', 1),
-  (1, 2, 1, 2, 2   , 1, '2020-08-03', 2),
-  (3, 4, 2, 1, 3   , 2, '2020-08-03', 2),
-  (3, 4, 1, 1, null, 2, '2020-08-04', 2);
+  (1, 2, 2, 1, 1   , 1, '2019-08-01', 201920),
+  (3, 4, 1, 2, 4   , 2, '2019-08-01', 201920),
+  (2, 1, 2, 2, null, 1, '2019-08-02', 201920),
+  (1, 2, 1, 2, 2   , 1, '2020-08-03', 202021),
+  (3, 4, 2, 1, 3   , 2, '2020-08-03', 202021),
+  (3, 4, 1, 1, null, 2, '2020-08-04', 202021);
 
 INSERT INTO player_game_stats (player_id, club_id, number, starter, goals, assists, minutes, yellow_cards, red_cards, game_id) VALUES
   (1, 1, 1, 1, 1, 0, 90, 0, 0, 1),

@@ -231,9 +231,9 @@ public class FootballService {
   }
 
   /**
-   * Get clubs by league
+   * Get clubForStandings by league
    * @param leagueId
-   * @return clubs
+   * @return clubForStandings
    */
   public List<Club> getClubsByLeague(int leagueId) {
     return repository.selectClubsByLeague(leagueId);
@@ -313,6 +313,14 @@ public class FootballService {
   @Transactional
   public void updateSeasonsCurrentFalse() {
     repository.updateSeasonsCurrentFalse();
+  }
+
+  @Transactional
+  public void updateClub(Club club) throws ResourceNotFoundException {
+    // clubが存在するか確認
+    repository.selectClub(club.getId())
+        .orElseThrow(() -> new ResourceNotFoundException("Club not found"));
+    repository.updateClub(club);
   }
 
 //  other

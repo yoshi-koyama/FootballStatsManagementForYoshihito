@@ -6,9 +6,13 @@ import football.StatsManagement.model.data.Club;
 import football.StatsManagement.utils.RankingUtils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public record Standing(int leagueId, int seasonId, List<ClubForStanding> clubs, String leagueName, String seasonName) {
+public record Standing(
+    int leagueId,
+    int seasonId,
+    List<ClubForStanding> clubForStandings,
+    String leagueName,
+    String seasonName) {
 
   public static Standing initialStanding(int leagueId, int seasonId, FootballService service) throws ResourceNotFoundException {
     List<Club> clubs = service.getClubsByLeague(leagueId);
