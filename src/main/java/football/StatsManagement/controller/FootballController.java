@@ -60,6 +60,16 @@ public class FootballController {
   }
 
   /**
+   * シーズン一覧の取得
+   * @return シーズン一覧
+   */
+  @Operation(summary = "シーズン一覧の取得", description = "登録されているシーズンの一覧を取得します")
+  @GetMapping("/seasons")
+  public List<Season> getSeasons() {
+    return service.getSeasons();
+  }
+
+  /**
    * 国IDに紐づく国の取得
    * @param countryId
    * @return 国
@@ -323,6 +333,7 @@ public class FootballController {
 
     return ResponseEntity.ok().body(player);
   }
+
 
 
 }

@@ -54,6 +54,14 @@ class FootballControllerTest {
   }
 
   @Test
+  @DisplayName("シーズン一覧を取得できること")
+  void getSeasons() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/seasons"))
+        .andExpect(status().isOk());
+    verify(service, times(1)).getSeasons();
+  }
+
+  @Test
   @DisplayName("IDを指定して国を取得できること")
   void getCountry() throws Exception {
     int id = 1;

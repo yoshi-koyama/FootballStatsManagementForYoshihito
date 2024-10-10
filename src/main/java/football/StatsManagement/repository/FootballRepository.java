@@ -150,7 +150,7 @@ public interface FootballRepository {
   List<Player> selectPlayersByClub(int clubId);
 
   /**
-   * Select clubs by league
+   * Select clubForStandings by league
    * @param leagueId
    * @return
    */
@@ -180,7 +180,7 @@ public interface FootballRepository {
   List<League> selectLeagues();
 
   /**
-   * Select all clubs
+   * Select all clubForStandings
    * @return
    */
   @Select("SELECT * FROM clubs")
@@ -272,5 +272,8 @@ public interface FootballRepository {
    */
   @Update("UPDATE seasons SET current = false")
   void updateSeasonsCurrentFalse();
+
+  @Update("UPDATE clubs SET league_id = #{leagueId}, name = #{name} WHERE id = #{id}")
+  void updateClub(Club club);
 
 }
