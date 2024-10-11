@@ -1,7 +1,10 @@
 package football.StatsManagement.controller;
 
+import football.StatsManagement.exception.ResourceConflictException;
 import football.StatsManagement.exception.ResourceNotFoundException;
 import football.StatsManagement.model.domain.json.GameResultWithPlayerStatsForJson;
+import football.StatsManagement.model.domain.json.PlayerForPatch;
+import football.StatsManagement.model.domain.json.PlayerForTransfer;
 import football.StatsManagement.service.FootballService;
 import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Club;
@@ -322,18 +325,53 @@ public class FootballController {
   }
 
   /**
-   * 選手情報の更新
-   * @param player
-   * @return 更新された選手情報
+   * 選手の更新
+   * @param playerForPatch
+   * @param playerId
+   * @return 更新された選手
    */
-  @Operation(summary = "選手情報の更新", description = "選手情報を更新します")
-  @PutMapping("/player")
-  public ResponseEntity<Player> updatePlayer(@RequestBody @Valid Player player) throws FootballException, ResourceNotFoundException {
-    service.updatePlayer(player);
+  @Operation(summary = "選手の更新", description = "選手の名前および番号を変更します")
+  @PatchMapping("/player-patch/{playerId}")
+  public ResponseEntity<Player> patchPlayer(
+      @RequestBody @Valid PlayerForPatch playerForPatch,
+      @PathVariable @Positive int playerId)
+      throws FootballException, ResourceNotFoundException, ResourceConflictException {
+    service.updatePlayerNumberAndName(playerId, playerForPatch.getNumber(), playerForPatch.getName());
 
-    return ResponseEntity.ok().body(player);
+    return ResponseEntity.ok().body(service.getPlayer(playerId));
   }
 
+  /**
+   * 選手の移籍
+   * @param playerForTransfer
+   * @param playerId
+   * @return 移籍された選手
+   */
+  @PatchMapping("/player-transfer/{playerId}")
+  public ResponseEntity<Player> transferPlayer(
+      @RequestBody @Valid PlayerForTransfer playerForTransfer,
+      @PathVariable @Positive int playerId)
+      throws FootballException, ResourceNotFoundException, ResourceConflictException {
+    service.updatePlayerClubAndNumber(playerId, playerForTransfer.getClubId(), playerForTransfer.getNumber());
+
+    return ResponseEntity.ok().body(service.getPlayer(playerId));
+  }
+
+  /**
+   * クラブの昇格・降格
+   * @param leagueId
+   * @param clubId
+   * @return 昇格・降格されたクラブ
+   */
+  @PatchMapping("club-promote-or-relegate/{clubId}")
+  public ResponseEntity<Club> promoteOrRelegateClub(
+      @RequestParam @Positive int leagueId,
+      @PathVariable @Positive int clubId)
+      throws ResourceNotFoundException, ResourceConflictException {
+    service.updateClubLeague(clubId, leagueId);
+
+    return ResponseEntity.ok().body(service.getClub(clubId));
+  }
 
 
 }

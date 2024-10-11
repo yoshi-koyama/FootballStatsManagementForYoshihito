@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import football.StatsManagement.exception.FootballException;
+import football.StatsManagement.exception.ResourceConflictException;
 import football.StatsManagement.exception.ResourceNotFoundException;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.Country;
@@ -360,42 +361,6 @@ class FootballServiceTest {
     verify(repository, times(1)).selectSeasons();
   }
 
-  @Test
-  @DisplayName("選手の更新_リポジトリが適切に処理されること")
-  void updatePlayer() throws FootballException, ResourceNotFoundException {
-    PlayerForJson playerForJson = new PlayerForJson(1, "sampleName", 1);
-    Player player = new Player(playerForJson);
-    when(repository.selectPlayer(player.getId())).thenReturn(Optional.of(new Player(1, 1, "oldName", 1)));
-    sut.updatePlayer(player);
-    verify(repository, times(1)).selectPlayersByClub(player.getClubId());
-    verify(repository, times(1)).selectPlayer(player.getId());
-    verify(repository, times(1)).updatePlayer(player);
-  }
-
-  @Test
-  @DisplayName("選手の更新_numberが重複している場合に適切に例外処理されること")
-  void updatePlayer_withDuplicatedNumber() {
-    PlayerForJson playerForJson = new PlayerForJson(1, "sampleName", 1);
-    Player player = new Player(playerForJson);
-    // 既に同じ背番号の選手が登録されている状態を作る
-    when(repository.selectPlayersByClub(1)).thenReturn(List.of(
-        new Player(1, 1, "sampleName", 1)
-    ));
-    // 例外が投げられることを確認し、メッセージもチェック
-    FootballException thrown = assertThrows(FootballException.class, () -> sut.updatePlayer(player));
-    assertEquals("Player number is already used", thrown.getMessage());
-  }
-
-  @Test
-  @DisplayName("選手の更新_更新対象の選手が存在しない場合に適切に例外処理されること")
-  void updatePlayer_withNotFound() {
-    PlayerForJson playerForJson = new PlayerForJson(1, "sampleName", 1);
-    Player player = new Player(playerForJson);
-    // リポジトリが空の状態を作る
-    when(repository.selectPlayer(player.getId())).thenReturn(Optional.empty());
-    // 例外が投げられることを確認
-    assertThrows(ResourceNotFoundException.class, () -> sut.updatePlayer(player));
-  }
 
   @Test
   @DisplayName("シーズンの過去シーズンへの更新_リポジトリが適切に処理されること")
@@ -405,25 +370,115 @@ class FootballServiceTest {
   }
 
   @Test
-  @DisplayName("クラブの更新_リポジトリが適切に処理されること")
-  void updateClub() throws ResourceNotFoundException {
-    ClubForJson clubForJson = new ClubForJson(1, "sampleName");
-    Club club = new Club(clubForJson);
-    when(repository.selectClub(club.getId())).thenReturn(Optional.of(new Club(1, 1, "oldName")));
-    sut.updateClub(club);
-    verify(repository, times(1)).selectClub(club.getId());
-    verify(repository, times(1)).updateClub(club);
+  @DisplayName("選手の背番号と名前の更新_リポジトリが適切に処理されること")
+  void updatePlayerNumberAndName() throws ResourceNotFoundException, FootballException, ResourceConflictException {
+    int id = 1;
+    int number = 99;
+    String name = "newName";
+    when(repository.selectPlayer(id)).thenReturn(Optional.of(new Player(id, 1, "sampleName", 1)));
+    sut.updatePlayerNumberAndName(id, number, name);
+    verify(repository, times(1)).selectPlayer(id);
+    verify(repository, times(1)).updatePlayerNumberAndName(id, number, name);
   }
 
   @Test
-  @DisplayName("クラブの更新_更新対象のクラブが存在しない場合に適切に例外処理されること")
-  void updateClub_withNotFound() {
-    ClubForJson clubForJson = new ClubForJson(1, "sampleName");
-    Club club = new Club(clubForJson);
+  @DisplayName("選手の背番号と名前の更新_選手が存在しない場合に適切に例外処理されること")
+  void updatePlayerNumberAndName_withNotFoundPlayer() {
     // リポジトリが空の状態を作る
-    when(repository.selectClub(club.getId())).thenReturn(Optional.empty());
+    when(repository.selectPlayer(1)).thenReturn(Optional.empty());
     // 例外が投げられることを確認
-    assertThrows(ResourceNotFoundException.class, () -> sut.updateClub(club));
+    assertThrows(ResourceNotFoundException.class, () -> sut.updatePlayerNumberAndName(1, 1, "sampleName"));
+  }
+
+  @Test
+  @DisplayName("選手の背番号と名前の更新_背番号が重複している場合に適切に例外処理されること")
+  void updatePlayerNumberAndName_withDuplicatedNumber() {
+    when(repository.selectPlayer(1)).thenReturn(Optional.of(new Player(1, 1, "sampleName", 1)));
+    // 既に同じ背番号の選手が登録されている状態を作る
+    when(sut.getPlayersByClub(1)).thenReturn(List.of(
+        new Player(2, 1, "sampleName", 1)
+    ));
+    // 例外が投げられることを確認
+    assertThrows(FootballException.class, () -> sut.updatePlayerNumberAndName(1, 1, "sampleName"));
+  }
+
+  @Test
+  @DisplayName("選手の背番号と名前の更新_変更がない場合に適切に例外処理されること")
+  void updatePlayerNumberAndName_withNoChange() {
+    when(repository.selectPlayer(1)).thenReturn(Optional.of(new Player(1, 1, "sampleName", 1)));
+    // 例外が投げられることを確認
+    assertThrows(
+        ResourceConflictException.class, () -> sut.updatePlayerNumberAndName(1, 1, "sampleName"));
+  }
+
+  @Test
+  @DisplayName("選手のクラブと背番号の更新_リポジトリが適切に処理されること")
+  void updatePlayerClubAndNumber() throws ResourceNotFoundException, FootballException, ResourceConflictException {
+    int id = 1;
+    int clubId = 2;
+    int number = 99;
+    when(repository.selectPlayer(id)).thenReturn(Optional.of(new Player(id, 1, "sampleName", 1)));
+    sut.updatePlayerClubAndNumber(id, clubId, number);
+    verify(repository, times(1)).selectPlayer(id);
+    verify(repository, times(1)).updatePlayerClubAndNumber(id, clubId, number);
+  }
+
+  @Test
+  @DisplayName("選手のクラブと背番号の更新_選手が存在しない場合に適切に例外処理されること")
+  void updatePlayerClubAndNumber_withNotFoundPlayer() {
+    // リポジトリが空の状態を作る
+    when(repository.selectPlayer(1)).thenReturn(Optional.empty());
+    // 例外が投げられることを確認
+    assertThrows(ResourceNotFoundException.class, () -> sut.updatePlayerClubAndNumber(1, 1, 1));
+  }
+
+  @Test
+  @DisplayName("選手のクラブと背番号の更新_クラブに変更がない場合に適切に例外処理されること")
+  void updatePlayerClubAndNumber_withNoChange() {
+    when(repository.selectPlayer(1)).thenReturn(Optional.of(new Player(1, 1, "sampleName", 1)));
+    // 例外が投げられることを確認
+    assertThrows(
+        ResourceConflictException.class, () -> sut.updatePlayerClubAndNumber(1, 1, 1));
+  }
+
+  @Test
+  @DisplayName("選手のクラブと背番号の更新_背番号が重複している場合に適切に例外処理されること")
+  void updatePlayerClubAndNumber_withDuplicatedNumber() {
+    when(repository.selectPlayer(1)).thenReturn(Optional.of(new Player(1, 1, "sampleName", 1)));
+    // 既に同じ背番号の選手が登録されている状態を作る
+    when(sut.getPlayersByClub(2)).thenReturn(List.of(
+        new Player(2, 2, "sampleName", 1)
+    ));
+    // 例外が投げられることを確認
+    assertThrows(FootballException.class, () -> sut.updatePlayerClubAndNumber(1, 2, 1));
+  }
+
+  @Test
+  @DisplayName("クラブのリーグの更新_リポジトリが適切に処理されること")
+  void updateClubLeague() throws ResourceNotFoundException, ResourceConflictException {
+    int id = 1;
+    int leagueId = 2;
+    when(repository.selectClub(id)).thenReturn(Optional.of(new Club(id, 1, "sampleName")));
+    sut.updateClubLeague(id, leagueId);
+    verify(repository, times(1)).selectClub(id);
+    verify(repository, times(1)).updateClubLeague(id, leagueId);
+  }
+
+  @Test
+  @DisplayName("クラブのリーグの更新_クラブが存在しない場合に適切に例外処理されること")
+  void updateClubLeague_withNotFoundClub() {
+    // リポジトリが空の状態を作る
+    when(repository.selectClub(1)).thenReturn(Optional.empty());
+    // 例外が投げられることを確認
+    assertThrows(ResourceNotFoundException.class, () -> sut.updateClubLeague(1, 1));
+  }
+  @Test
+  @DisplayName("クラブのリーグの更新_リーグに変更がない場合に適切に例外処理されること")
+  void updateClubLeague_withNoChange() {
+    when(repository.selectClub(1)).thenReturn(Optional.of(new Club(1, 1, "sampleName")));
+    // 例外が投げられることを確認
+    assertThrows(
+        ResourceConflictException.class, () -> sut.updateClubLeague(1, 1));
   }
 
   @Test

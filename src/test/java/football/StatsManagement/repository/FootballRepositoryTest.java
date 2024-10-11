@@ -465,14 +465,39 @@ class FootballRepositoryTest {
   }
 
   @Test
-  @DisplayName("クラブ情報を更新できること_更新後の情報が適切であること")
-  void updateClub() {
-    Club club = sut.selectClub(1).get();
-    club.setName("UpdatedClub");
-    club.setLeagueId(2);
-    sut.updateClub(club);
-    Club actual = sut.selectClub(1).get();
-    Club expected = new Club(1, 2, "UpdatedClub");
+  @DisplayName("選手の背番号と名前を更新できること_更新後の情報が適切であること")
+  void updatePlayerNumberAndName() {
+    Player player = sut.selectPlayer(1).get();
+    player.setNumber(99);
+    player.setName("UpdatedPlayer");
+    sut.updatePlayerNumberAndName(1, 99, "UpdatedPlayer");
+    Player actual = sut.selectPlayer(1).get();
+    Player expected = new Player(1, 1, "UpdatedPlayer", 99);
     assertEquals(expected, actual);
   }
+
+  @Test
+  @DisplayName("選手のクラブと背番号を更新できること_更新後の情報が適切であること")
+  void updatePlayerClubAndNumber() {
+    Player player = sut.selectPlayer(1).get();
+    player.setClubId(2);
+    player.setNumber(99);
+    sut.updatePlayerClubAndNumber(1, 2, 99);
+    Player actual = sut.selectPlayer(1).get();
+    Player expected = new Player(1, 2, "PlayerAAAA", 99);
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  @DisplayName("クラブのリーグIDを更新できること_更新後の情報が適切であること")
+  void updateClubLeague() {
+    Club club = sut.selectClub(1).get();
+    club.setLeagueId(2);
+    sut.updateClubLeague(1, 2);
+    Club actual = sut.selectClub(1).get();
+    Club expected = new Club(1, 2, "ClubAAA");
+    assertEquals(expected, actual);
+  }
+
+
 }

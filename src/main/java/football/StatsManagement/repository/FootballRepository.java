@@ -273,7 +273,29 @@ public interface FootballRepository {
   @Update("UPDATE seasons SET current = false")
   void updateSeasonsCurrentFalse();
 
-  @Update("UPDATE clubs SET league_id = #{leagueId}, name = #{name} WHERE id = #{id}")
-  void updateClub(Club club);
+  /**
+   * 選手の背番号と名前を更新する
+   * @param id
+   * @param number
+   * @param name
+   */
+  @Update("UPDATE players SET (number, name) = (#{number}, #{name}) WHERE id = #{id}")
+  void updatePlayerNumberAndName(int id, int number, String name);
 
+  /**
+   * 選手のクラブと背番号を更新する
+   * @param id
+   * @param clubId
+   * @param number
+   */
+  @Update("UPDATE players SET (club_id, number) = (#{clubId}, #{number}) WHERE id = #{id}")
+  void updatePlayerClubAndNumber(int id, int clubId, int number);
+
+  /**
+   * クラブのリーグを更新する
+   * @param id
+   * @param leagueId
+   */
+  @Update("UPDATE clubs SET league_id = #{leagueId} WHERE id = #{id}")
+  void updateClubLeague(int id, int leagueId);
 }
