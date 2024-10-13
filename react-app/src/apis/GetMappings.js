@@ -103,7 +103,7 @@ export const getCurrentSeason = async (setCurrentSeason) => {
     }
   }
   
-  export const getLeagues = async (countryId, setLeagues) => {
+  export const getLeaguesByCountry = async (countryId, setLeagues) => {
     try {
         const response = await fetch(`/countries/${countryId}/leagues`);
         if (!response.ok) {
@@ -118,7 +118,7 @@ export const getCurrentSeason = async (setCurrentSeason) => {
     }
   }
   
-  export const getClubs = async (leagueId, setClubs) => {
+  export const getClubsByLeague = async (leagueId, setClubs) => {
     try {
         const response = await fetch(`/leagues/${leagueId}/clubs`);
         if (!response.ok) {
@@ -132,6 +132,21 @@ export const getCurrentSeason = async (setCurrentSeason) => {
         console.error(error);
     }
   }
+
+  export const getClubs = async (setClubs) => {
+    try {
+        const response = await fetch('/clubs');
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text);
+        }
+        const data = await response.json();
+        setClubs(data);
+    } catch (error) {
+        alert('Error: ' + error.message);
+        console.error(error);
+    }
+}
   
   export const getStanding = async (leagueId, seasonId, setStanding) => {
     try {
@@ -148,7 +163,7 @@ export const getCurrentSeason = async (setCurrentSeason) => {
     }
   }
   
-  export const getPlayers = async (clubId, setPlayers) => {
+  export const getPlayersByClub = async (clubId, setPlayers) => {
     try {
         const response = await fetch(`/clubs/${clubId}/players`);
         if (!response.ok) {

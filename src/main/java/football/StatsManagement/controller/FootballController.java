@@ -16,11 +16,9 @@ import football.StatsManagement.model.data.PlayerGameStat;
 import football.StatsManagement.model.data.Season;
 import football.StatsManagement.model.domain.PlayerSeasonStat;
 import football.StatsManagement.model.domain.json.ClubForJson;
-import football.StatsManagement.model.domain.json.GameResultForJson;
 import football.StatsManagement.model.domain.GameResultWithPlayerStats;
 import football.StatsManagement.model.domain.json.PlayerForJson;
 import football.StatsManagement.model.domain.json.LeagueForJson;
-import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
 import football.StatsManagement.model.domain.Standing;
 import football.StatsManagement.model.domain.json.SeasonForJson;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,13 +29,11 @@ import jakarta.validation.constraints.Positive;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -133,7 +129,7 @@ public class FootballController {
    */
   @Operation(summary = "リーグ一覧の取得", description = "国IDに紐づくリーグの一覧を取得します")
   @GetMapping("/countries/{countryId}/leagues")
-  public List<League> getLeagues(@PathVariable @Positive int countryId) {
+  public List<League> getLeaguesByCountry(@PathVariable @Positive int countryId) {
     return service.getLeaguesByCountry(countryId);
   }
 
@@ -144,8 +140,18 @@ public class FootballController {
    */
   @Operation(summary = "クラブ一覧の取得", description = "リーグIDに紐づくクラブの一覧を取得します")
   @GetMapping("/leagues/{leagueId}/clubs")
-  public List<Club> getClubs(@PathVariable @Positive int leagueId) {
+  public List<Club> getClubsByLeague(@PathVariable @Positive int leagueId) {
     return service.getClubsByLeague(leagueId);
+  }
+
+  /**
+   * クラブ一覧の取得
+   * @return クラブ一覧
+   */
+  @Operation(summary = "クラブ一覧の取得", description = "登録されているクラブの一覧を取得します")
+  @GetMapping("/clubs")
+  public List<Club> getClubs() {
+    return service.getClubs();
   }
 
   /**
@@ -168,7 +174,7 @@ public class FootballController {
    */
   @Operation(summary = "選手一覧の取得", description = "クラブIDに紐づく選手の一覧を取得します")
   @GetMapping("/clubs/{clubId}/players")
-  public List<Player> getPlayers(@PathVariable @Positive int clubId) {
+  public List<Player> getPlayersByClub(@PathVariable @Positive int clubId) {
     return service.getPlayersByClub(clubId);
   }
 

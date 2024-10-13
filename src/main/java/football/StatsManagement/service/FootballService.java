@@ -286,6 +286,14 @@ public class FootballService {
         .orElseThrow(() -> new ResourceNotFoundException("Season not found"));
   }
 
+  /**
+   * Get all clubs
+   * @return
+   */
+  public List<Club> getClubs() {
+    return repository.selectClubs();
+  }
+
 //  update
 
 
