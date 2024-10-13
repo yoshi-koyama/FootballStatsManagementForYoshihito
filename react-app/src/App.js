@@ -49,6 +49,7 @@ function App() {
         draggable // ドラッグで閉じる
       />
     </div>
+
   );
 }
 

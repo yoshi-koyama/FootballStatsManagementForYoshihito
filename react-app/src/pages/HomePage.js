@@ -5,9 +5,9 @@ function HomePage() {
     return (
         <div>
             {/* CountriesPageへのリンク */}
-            <Link to="/countries">データ閲覧</Link>
-            {/* RegisterSeasonPageへのリンク */}
-            <Link to="/register-season">シーズン登録</Link>
+            <Link to="/countries">データ管理</Link>
+            <br />
+            <Link to="/register-season">新シーズン登録</Link>
         </div>
     );
 }

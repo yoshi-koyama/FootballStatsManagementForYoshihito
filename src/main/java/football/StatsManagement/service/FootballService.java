@@ -1,6 +1,7 @@
 package football.StatsManagement.service;
 
 import football.StatsManagement.exception.FootballException;
+import football.StatsManagement.exception.ResourceConflictException;
 import football.StatsManagement.exception.ResourceNotFoundException;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.Country;
@@ -119,8 +120,9 @@ public class FootballService {
         throw new FootballException("Season name is already used");
       }
       // 既存のシーズンと期間が重複しないか確認
-      if (season.getEndDate().isAfter(s.getStartDate()) || season.getStartDate().isBefore(s.getEndDate())) {
-        throw new FootballException("Season period is already used");
+      if ((season.getStartDate().isAfter(s.getStartDate()) && season.getStartDate().isBefore(s.getEndDate()))
+          || (season.getEndDate().isAfter(s.getStartDate()) && season.getEndDate().isBefore(s.getEndDate()))) {
+          throw new FootballException("Season period is already used");
       }
     }
     // ここまで確認フェーズ、以降は登録処理
@@ -286,25 +288,7 @@ public class FootballService {
 
 //  update
 
-  /**
-   * Update a player
-   * @param player
-   */
-  @Transactional
-  public void updatePlayer(Player player) throws FootballException, ResourceNotFoundException {
-    // numberが重複していないか確認
-    List<Player> players = repository.selectPlayersByClub(player.getClubId());
-    for (Player p : players) {
-      if (p.getNumber() == player.getNumber() && p.getId() != player.getId()) {
-        throw new FootballException("Player number is already used");
-      }
-    }
-    // playerが存在するか確認
-    repository.selectPlayer(player.getId())
-        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
 
-    repository.updatePlayer(player);
-  }
 
   /**
    * Update seasons current false
@@ -315,13 +299,62 @@ public class FootballService {
     repository.updateSeasonsCurrentFalse();
   }
 
+  /**
+   * Update player number and name
+   * @param id
+   * @param number
+   * @param name
+   * @throws ResourceNotFoundException
+   */
   @Transactional
-  public void updateClub(Club club) throws ResourceNotFoundException {
-    // clubが存在するか確認
-    repository.selectClub(club.getId())
-        .orElseThrow(() -> new ResourceNotFoundException("Club not found"));
-    repository.updateClub(club);
+  public void updatePlayerNumberAndName(int id, int number, String name)
+      throws ResourceNotFoundException, FootballException, ResourceConflictException {
+    Player player = repository.selectPlayer(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+    // numberが重複していないか確認
+    List<Player> players = getPlayersByClub(player.getClubId());
+    for (Player p : players) {
+      if (p.getNumber() == number) {
+        throw new FootballException("Player number is already used");
+      }
+    }
+    // 現在の情報と変更がなければResourceConflictExceptionを投げる
+    if (player.getNumber() == number && player.getName().equals(name)) {
+      throw new ResourceConflictException("Player number and name are not changed");
+    }
+    repository.updatePlayerNumberAndName(id, number, name);
   }
+
+  @Transactional
+  public void updatePlayerClubAndNumber(int id, int clubId, int number)
+      throws ResourceNotFoundException, FootballException, ResourceConflictException {
+    Player player = repository.selectPlayer(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+    // クラブが変更されているかを確認
+    if (player.getClubId() == clubId) {
+      throw new ResourceConflictException("Player club is not changed");
+    }
+    // numberが重複していないか確認
+    List<Player> players = getPlayersByClub(clubId);
+    for (Player p : players) {
+      if (p.getNumber() == number) {
+        throw new FootballException("Player number is already used");
+      }
+    }
+    repository.updatePlayerClubAndNumber(id, clubId, number);
+  }
+
+  @Transactional
+  public void updateClubLeague(int id, int leagueId) throws ResourceNotFoundException, ResourceConflictException {
+    Club club = repository.selectClub(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Club not found"));
+    // リーグが変更されているかを確認
+    if (club.getLeagueId() == leagueId) {
+      throw new ResourceConflictException("Club league is not changed");
+    }
+    repository.updateClubLeague(id, leagueId);
+  }
+
 
 //  other
   public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) throws ResourceNotFoundException {
