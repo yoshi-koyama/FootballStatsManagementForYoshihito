@@ -1,21 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify'; // トースト通知を追加
+import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { getCountry, getLeagues } from '../apis/GetMappings';
 
 function LeaguesPage() {
   const { countryId } = useParams(); // URLから国IDを取得
   const [leagues, setLeagues] = useState([]);
   const [newLeagueName, setNewLeagueName] = useState(''); // 新規登録用のstate
-  const [message, setMessage] = useState(''); // フィードバックメッセージ用のstate
-  const [countryName, setCountryName] = useState(''); // 国名を管理するstate
+  const [country, setCountry] = useState([]); // 国を管理するstate
 
   useEffect(() => {
-    fetch(`/countries/${countryId}/leagues`) // APIエンドポイント
-      .then((response) => response.json())
-      .then((data) => setLeagues(data));
-
-    fetch(`/countries/${countryId}`) // APIエンドポイント
-        .then((response) => response.json())
-        .then((data) => setCountryName(data.name));
+    getLeagues(countryId, setLeagues);
+    getCountry(countryId, setCountry);
   }, [countryId]);
 
   // フォームの入力値を管理
@@ -44,15 +41,15 @@ function LeaguesPage() {
           if (response.ok) {
             return response.json();
           }
-          throw new Error('Failed to register league');
+          return response.text().then((text) => { throw new Error(text); });
         })
         .then((newLeague) => {
           setLeagues([...leagues, newLeague]); // 新しいリーグをリストに追加
           setNewLeagueName(''); // 入力欄をリセット
-          setMessage('League registered successfully!');
+          toast.success(`League '${newLeague.name}' registered successfully!`);
         })
         .catch((error) => {
-          setMessage('Failed to register league.');
+          alert('Error: ' + error.message);
           console.error(error);
         });
   };
@@ -65,7 +62,7 @@ function LeaguesPage() {
       {/* CountriesPageに戻るリンク */}
       <Link to="/countries">Back to Countries</Link>
       {/* 国名を表示 */}
-      {countryName && <h1>{countryName} Leagues</h1>} {/* 国名を表示する要素を追加 */}
+      {country && <h1>{country.name} Leagues</h1>} {/* 国名を表示する要素を追加 */}
       <ul>
         {leagues.map((league) => (
           <li key={league.id}>
@@ -86,9 +83,6 @@ function LeaguesPage() {
         />
         <button type="submit">Register</button>
       </form>
-
-      {/* 登録結果のフィードバックメッセージ */}
-      {message && <p>{message}</p>}
     </div>
   );
 }
