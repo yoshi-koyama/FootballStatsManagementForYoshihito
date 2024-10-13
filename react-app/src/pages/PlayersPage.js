@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify'; // トースト通知を追加
+import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { getClub, getCurrentSeason, getPlayers, getPlayerSeasonStats, getPlayersSeasonStatsByClub } from '../apis/GetMappings.js';
 
 function PlayersPage() {
   const { countryId } = useParams(); // URLから国IDを取得
@@ -8,18 +11,25 @@ function PlayersPage() {
   const [players, setPlayers] = useState([]);
   const [newPlayerName, setNewPlayerName] = useState(''); // 新規登録用のstate
   const [number, setNumber] = useState(''); // 新規登録用のstate
-  const [message, setMessage] = useState(''); // フィードバックメッセージ用のstate
-  const [clubName, setClubName] = useState(''); // クラブ名を管理するstate
+  const [club, setClub] = useState(''); // クラブ名を管理するstate
+  const [playerSeasonStats, setPlayerSeasonStats] = useState([]); // 選手たちのシーズン成績を管理するstate
+  const [currentSeason, setCurrentSeason] = useState(null); // 現在のシーズンを管理するstate
 
   useEffect(() => {
-    fetch(`/clubs/${clubId}/players`) // APIエンドポイント
-      .then((response) => response.json())
-      .then((data) => setPlayers(data));
+    getCurrentSeason(setCurrentSeason);
+  }, []);
 
-    fetch(`/clubs/${clubId}`) // APIエンドポイント
-        .then((response) => response.json())
-        .then((data) => setClubName(data.name));
+  useEffect(() => {
+    getPlayers(clubId, setPlayers);
+    getClub(clubId, setClub);
   }, [clubId]);
+
+  useEffect(() => {
+    if (currentSeason) { // currentSeasonが設定されている場合のみ実行
+      getPlayersSeasonStatsByClub(clubId, currentSeason.id, setPlayerSeasonStats);
+    }
+  }, [clubId, currentSeason]);
+
 
   // フォームの入力値を管理
   const handleInputChange = (e) => {
@@ -58,10 +68,10 @@ function PlayersPage() {
       .then((newPlayer) => {
         setPlayers([...players, newPlayer]); // 新しいクラブをリストに追加
         setNewPlayerName(''); // 入力欄をリセット
-        setMessage('Player registered successfully!');
+        toast.success(`Player '${newPlayer.name}' registered successfully!`);
       })
       .catch((error) => {
-        setMessage('Failed to register player: ' + error.message);
+        alert('Error: ' + error.message);
         console.error(error);
       });
   };
@@ -74,7 +84,7 @@ function PlayersPage() {
       {/* ClubsPageに戻るリンク */}
       <Link to={`/countries/${countryId}/leagues/${leagueId}/clubs`}>Back to Clubs</Link>
       {/* クラブ名を表示 */}
-      {clubName && <h1>{clubName} Players</h1>} {/* クラブ名を表示する要素を追加 */}
+      {club && <h1>{club.name} Players</h1>} {/* クラブ名を表示する要素を追加 */}
       <ul>
         {players.map((player) => (
           <li key={player.id}>
@@ -104,9 +114,6 @@ function PlayersPage() {
         />
         <button type="submit">Register</button>
       </form>
-
-      {/* 登録結果のフィードバックメッセージ */}
-      {message && <p>{message}</p>}
     </div>
   );
 }

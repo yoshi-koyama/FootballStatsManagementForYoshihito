@@ -1,44 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify'; // トースト通知を追加
+import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { getClubs, getCurrentSeason, getLeague, getSeasons, getStanding } from '../apis/GetMappings';
 
 function ClubsPage() {
   const { countryId } = useParams(); // URLから国IDを取得
   const { leagueId } = useParams(); // URLからリーグIDを取得
   const [clubs, setClubs] = useState([]);
   const [newClubName, setNewClubName] = useState(''); // 新規登録用のstate
-  const [message, setMessage] = useState(''); // フィードバックメッセージ用のstate
-  const [leagueName, setLeagueName] = useState(''); // リーグ名を管理するstate
+  const [league, setLeague] = useState(''); // リーグ名を管理するstate
   const [isStaidingView, setIsStandingView] = useState(false); // 順位表表示切り替え用のstate
   const [standing, setStanding] = useState([]);
   const [seasons, setSeasons] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(null);
 
   useEffect(() => {
-    fetch(`/seasons`) // APIエンドポイント
-      .then((response) => response.json())
-      .then((data) => setSeasons(data));
-
-    fetch('/seasons/current') // APIエンドポイント
-      .then((response) => response.json())
-      .then((data) => setSelectedSeason(data));
-
+    getSeasons(setSeasons);
+    getCurrentSeason(setSelectedSeason);
   }, []);
 
   useEffect(() => {
-    fetch(`/leagues/${leagueId}/clubs`) // APIエンドポイント
-      .then((response) => response.json())
-      .then((data) => setClubs(data));
-
-    fetch(`/leagues/${leagueId}`) // APIエンドポイント
-        .then((response) => response.json())
-        .then((data) => setLeagueName(data.name));
+    getClubs(leagueId, setClubs);
+    getLeague(leagueId, setLeague);
   }, [leagueId]);
 
   useEffect(() => {
     if (selectedSeason) { // selectedSeasonが設定されている場合のみ実行
-      fetch(`/leagues/${leagueId}/standings/${selectedSeason.id}`) // APIエンドポイント
-        .then((response) => response.json())
-        .then((data) => setStanding(data));
+      getStanding(leagueId, selectedSeason.id, setStanding);
     }
   }, [leagueId, selectedSeason]);
 
@@ -74,15 +63,15 @@ function ClubsPage() {
         if (response.ok) {
           return response.json();
         }
-        throw new Error('Failed to register club');
+        return response.text().then((text) => { throw new Error(text); });
       })
       .then((newClub) => {
         setClubs([...clubs, newClub]); // 新しいクラブをリストに追加
         setNewClubName(''); // 入力欄をリセット
-        setMessage('Club registered successfully!');
+        toast.success(`Club '${newClub.name}' registered successfully!`);
       })
       .catch((error) => {
-        setMessage('Failed to register club.');
+        alert('Error: ' + error.message);
         console.error(error);
       });
   };
@@ -95,7 +84,7 @@ function ClubsPage() {
       {/* LeaguePageに戻るリンク */}
       <Link to={`/countries/${countryId}/leagues`}>Back to Leagues</Link>
       {/* リーグ名を表示 */}
-      {leagueName && <h1>{leagueName} Clubs</h1>} {/* リーグ名を表示する要素を追加 */}
+      {league && <h1>{league.name} Clubs</h1>} {/* リーグ名を表示する要素を追加 */}
       {/* クラブ一覧と順位の表示切り替えボタン */}
       <button onClick={() => setIsStandingView(!isStaidingView)}>
         {isStaidingView ? 'View Clubs' : 'View Standing'}
@@ -125,9 +114,6 @@ function ClubsPage() {
             />
             <button type="submit">Register</button>
           </form>
-
-          {/* 登録結果のフィードバックメッセージ */}
-          {message && <p>{message}</p>}
         </>
       )}
 

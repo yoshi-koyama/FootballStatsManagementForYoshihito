@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify'; // トースト通知を追加
+import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { getCountries } from '../apis/GetMappings.js';
 
 function CountriesPage() {
   const [countries, setCountries] = useState([]);
   const [newCountryName, setNewCountryName] = useState(''); // 新規登録用のstate
-  const [message, setMessage] = useState(''); // フィードバックメッセージ用のstate
 
   useEffect(() => {
-    fetch('/countries') // APIエンドポイント
-      .then((response) => response.json())
-      .then((data) => setCountries(data));
+    getCountries(setCountries);
   }, []);
 
   // フォームの入力値を管理
@@ -34,15 +34,16 @@ function CountriesPage() {
         if (response.ok) {
           return response.json();
         }
-        throw new Error('Failed to register country');
+        return response.text().then((text) => { throw new Error(text); });
       })
       .then((newCountry) => {
         setCountries([...countries, newCountry]); // 新しい国をリストに追加
         setNewCountryName(''); // 入力欄をリセット
-        setMessage('Country registered successfully!');
+        // 成功メッセージをトーストで表示
+        toast.success(`Country '${newCountry.name}' registered successfully!`);
       })
       .catch((error) => {
-        setMessage('Failed to register country.');
+        alert('Error: ' + error.message);
         console.error(error);
       });
   };
@@ -72,9 +73,6 @@ function CountriesPage() {
         />
         <button type="submit">Register</button>
       </form>
-
-      {/* 登録結果のフィードバックメッセージ */}
-      {message && <p>{message}</p>}
     </div>
   );
 }

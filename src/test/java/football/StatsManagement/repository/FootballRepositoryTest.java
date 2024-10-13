@@ -195,7 +195,7 @@ class FootballRepositoryTest {
   }
 
   @Test
-  @DisplayName("クラブIDを指定して選手を検索できること_件数と情報が適切であること")
+  @DisplayName("クラブIDを指定して選手を検索できること_件数と情報と順番が適切であること")
   void selectPlayersByClub() {
     int clubId = 1;
     List<Player> actual = sut.selectPlayersByClub(clubId);
@@ -204,7 +204,8 @@ class FootballRepositoryTest {
         new Player(2, 1, "PlayerAAAB", 2)
     );
     assertThat(actual.size()).isEqualTo(expected.size());
-    assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+    // 順番も含めて検証
+    assertThat(actual).containsExactlyElementsOf(expected);
   }
 
   @Test

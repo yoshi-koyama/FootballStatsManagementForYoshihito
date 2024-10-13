@@ -146,7 +146,7 @@ public interface FootballRepository {
    * @param clubId
    * @return
    */
-  @Select("SELECT * FROM players WHERE club_id = #{clubId}")
+  @Select("SELECT * FROM players WHERE club_id = #{clubId} ORDER BY number")
   List<Player> selectPlayersByClub(int clubId);
 
   /**

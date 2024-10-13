@@ -6,6 +6,8 @@ function HomePage() {
         <div>
             {/* CountriesPageへのリンク */}
             <Link to="/countries">データ閲覧</Link>
+            {/* RegisterSeasonPageへのリンク */}
+            <Link to="/register-season">シーズン登録</Link>
         </div>
     );
 }
