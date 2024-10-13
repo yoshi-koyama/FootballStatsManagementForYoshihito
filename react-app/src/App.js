@@ -9,7 +9,7 @@ import CountriesPage from './pages/CountriesPage.js';
 import LeaguesPage from './pages/LeaguesPage.js';
 import ClubsPage from './pages/ClubsPage.js';
 import PlayersPage from './pages/PlayersPage.js';
-import { fetchPlayer, fetchPlayerSeasonStat } from './App';
+import PlayerPage from './pages/PlayerPage.js';
 
 function App() {
   return (
@@ -28,6 +28,7 @@ function App() {
           {/* クラブIDに基づいて選手ページに遷移 */}
           <Route path="/countries/:countryId/leagues/:leagueId/clubs/:clubId/players" element={<PlayersPage />} />
           {/* 選手IDに基づいて選手詳細ページに遷移 */}
+          <Route path="/countries/:countryId/leagues/:leagueId/clubs/:clubId/players/:playerId" element={<PlayerPage />} />
           {/* 試合結果登録画面に遷移 */}
 
           {/* 以下今後追加予定 */}

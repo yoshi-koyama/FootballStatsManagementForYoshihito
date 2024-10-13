@@ -361,6 +361,13 @@ class FootballServiceTest {
     verify(repository, times(1)).selectSeasons();
   }
 
+  @Test
+  @DisplayName("クラブすべての検索_リポジトリが適切に処理されること")
+  void getClubs() {
+    List<Club> clubs = sut.getClubs();
+    verify(repository, times(1)).selectClubs();
+  }
+
 
   @Test
   @DisplayName("シーズンの過去シーズンへの更新_リポジトリが適切に処理されること")

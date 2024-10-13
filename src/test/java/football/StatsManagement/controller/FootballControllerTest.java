@@ -143,7 +143,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("国IDに紐づくリーグ一覧を取得できること")
-  void getLeagues() throws Exception {
+  void getLeaguesByCountry() throws Exception {
     int countryId = 1;
     mockMvc.perform(MockMvcRequestBuilders.get("/countries/" + countryId + "/leagues"))
         .andExpect(status().isOk());
@@ -152,7 +152,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("国IDに紐づくリーグ一覧を取得する際にIDが0以下の場合、400エラーが返却されること")
-  void getLeaguesWithInvalidCountryId() throws Exception {
+  void getLeaguesByCountryWithInvalidCountryId() throws Exception {
     int countryId = 0;
     mockMvc.perform(MockMvcRequestBuilders.get("/countries/" + countryId + "/leagues"))
         .andExpect(status().isBadRequest())
@@ -161,7 +161,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("リーグIDに紐づくクラブ一覧を取得できること")
-  void getClubs() throws Exception {
+  void getClubsByLeague() throws Exception {
     int leagueId = 1;
     mockMvc.perform(MockMvcRequestBuilders.get("/leagues/" + leagueId + "/clubs"))
         .andExpect(status().isOk());
@@ -170,11 +170,19 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("リーグIDに紐づくクラブ一覧を取得する際にIDが0以下の場合、400エラーが返却されること")
-  void getClubsWithInvalidLeagueId() throws Exception {
+  void getClubsByLeagueWithInvalidLeagueId() throws Exception {
     int leagueId = 0;
     mockMvc.perform(MockMvcRequestBuilders.get("/leagues/" + leagueId + "/clubs"))
         .andExpect(status().isBadRequest())
         .andExpect(result -> assertTrue(result.getResolvedException() instanceof ConstraintViolationException));
+  }
+
+  @Test
+  @DisplayName("クラブ一覧を取得できること")
+  void getClubs() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/clubs"))
+        .andExpect(status().isOk());
+    verify(service, times(1)).getClubs();
   }
 
   @Test
@@ -202,7 +210,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("クラブIDに紐づく選手一覧を取得できること")
-  void getPlayers() throws Exception {
+  void getPlayersByClub() throws Exception {
     int clubId = 1;
     mockMvc.perform(MockMvcRequestBuilders.get("/clubs/" + clubId + "/players"))
         .andExpect(status().isOk());
@@ -211,7 +219,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("クラブIDに紐づく選手一覧を取得する際にIDが0以下の場合、400エラーが返却されること")
-  void getPlayersWithInvalidClubId() throws Exception {
+  void getPlayersByClubWithInvalidClubId() throws Exception {
     int clubId = 0;
     mockMvc.perform(MockMvcRequestBuilders.get("/clubs/" + clubId + "/players"))
         .andExpect(status().isBadRequest())
@@ -242,7 +250,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("クラブIDとシーズンIDに紐づく選手のシーズン成績を取得できること")
-  void getPlayerSeasonStatsByClubId() throws Exception {
+  void getPlayerSeasonStatsByClubIdByClub() throws Exception {
     int clubId = 1;
     int seasonId = 100001;
     mockMvc.perform(MockMvcRequestBuilders.get("/clubs/" + clubId + "/players-season-stats/" + seasonId))
@@ -256,7 +264,7 @@ class FootballControllerTest {
       "1, 0"
   })
   @DisplayName("クラブIDとシーズンIDに紐づく選手のシーズン成績を取得する際のIDのバリデーションテスト")
-  void getPlayerSeasonStatsByClubIdWithInvalidId(int clubId, int seasonId) throws Exception {
+  void getPlayerSeasonStatsByClubIdWithInvalidIdByClub(int clubId, int seasonId) throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.get("/clubs/" + clubId + "/players-season-stats/" + seasonId))
         .andExpect(status().isBadRequest())
         .andExpect(result -> assertTrue(result.getResolvedException() instanceof ConstraintViolationException));
@@ -264,7 +272,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("選手IDとシーズンIDに紐づく選手のシーズン成績を取得できること")
-  void getPlayerSeasonStat() throws Exception {
+  void getPlayerSeasonStatByClub() throws Exception {
     int playerId = 1;
     int seasonId = 100001;
     mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stat/" + seasonId))
@@ -278,7 +286,7 @@ class FootballControllerTest {
       "1, 0"
   })
   @DisplayName("選手IDとシーズンIDに紐づく選手のシーズン成績を取得する際のIDのバリデーションテスト")
-  void getPlayerSeasonStatWithInvalidId(int playerId, int seasonId) throws Exception {
+  void getPlayerSeasonStatWithInvalidIdByClub(int playerId, int seasonId) throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stat/" + seasonId))
         .andExpect(status().isBadRequest())
         .andExpect(result -> assertTrue(result.getResolvedException() instanceof ConstraintViolationException));
@@ -286,7 +294,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("選手IDに紐づく選手の通算成績を取得できること")
-  void getPlayerSeasonStatsByPlayerId() throws Exception {
+  void getPlayerSeasonStatsByPlayerIdByClub() throws Exception {
     int playerId = 1;
     mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stats"))
         .andExpect(status().isOk());
@@ -295,7 +303,7 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("選手IDに紐づく選手の通算成績を取得する際にIDが0以下の場合、400エラーが返却されること")
-  void getPlayerSeasonStatsByPlayerIdWithInvalidId() throws Exception {
+  void getPlayerSeasonStatsByPlayerIdWithInvalidIdByClub() throws Exception {
     int playerId = 0;
     mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stats"))
         .andExpect(status().isBadRequest())

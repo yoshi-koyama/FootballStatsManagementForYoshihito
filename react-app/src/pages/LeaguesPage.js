@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify'; // トースト通知を追加
 import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
-import { getCountry, getLeagues } from '../apis/GetMappings';
+import { getCountry, getLeaguesByCountry } from '../apis/GetMappings';
 
 function LeaguesPage() {
   const { countryId } = useParams(); // URLから国IDを取得
@@ -11,7 +11,7 @@ function LeaguesPage() {
   const [country, setCountry] = useState([]); // 国を管理するstate
 
   useEffect(() => {
-    getLeagues(countryId, setLeagues);
+    getLeaguesByCountry(countryId, setLeagues);
     getCountry(countryId, setCountry);
   }, [countryId]);
 

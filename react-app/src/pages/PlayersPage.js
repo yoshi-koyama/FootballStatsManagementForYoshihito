@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify'; // トースト通知を追加
 import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
-import { getClub, getCurrentSeason, getPlayers, getPlayerSeasonStats, getPlayersSeasonStatsByClub } from '../apis/GetMappings.js';
+import { getClub, getCurrentSeason, getPlayersByClub, getPlayersSeasonStatsByClub } from '../apis/GetMappings.js';
 
 function PlayersPage() {
   const { countryId } = useParams(); // URLから国IDを取得
@@ -20,7 +20,7 @@ function PlayersPage() {
   }, []);
 
   useEffect(() => {
-    getPlayers(clubId, setPlayers);
+    getPlayersByClub(clubId, setPlayers);
     getClub(clubId, setClub);
   }, [clubId]);
 
@@ -85,13 +85,30 @@ function PlayersPage() {
       <Link to={`/countries/${countryId}/leagues/${leagueId}/clubs`}>Back to Clubs</Link>
       {/* クラブ名を表示 */}
       {club && <h1>{club.name} Players</h1>} {/* クラブ名を表示する要素を追加 */}
-      <ul>
-        {players.map((player) => (
-          <li key={player.id}>
-            <Link to={`/countries/${countryId}/leagues/${leagueId}/clubs/${clubId}/players/${player.id}`}>{player.name}</Link>
-          </li>
-        ))}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Name</th>
+            <th>Games</th>
+            <th>Goals</th>
+          </tr>
+        </thead>
+        <tbody>
+          {players.map((player) => (
+            <tr key={player.id}>
+              <td>{player.number}</td>
+              <td>
+                <Link to={`/countries/${countryId}/leagues/${leagueId}/clubs/${clubId}/players/${player.id}`}>
+                  {player.name}
+                </Link>
+              </td>
+              <td>{playerSeasonStats.find((stats) => stats.playerId === player.id)?.games}</td>
+              <td>{playerSeasonStats.find((stats) => stats.playerId === player.id)?.goals}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {/* 新しい選手の登録フォーム */}
       <h2>Register New Player</h2>
