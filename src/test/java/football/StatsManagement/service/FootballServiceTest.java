@@ -20,12 +20,14 @@ import football.StatsManagement.model.data.Season;
 import football.StatsManagement.model.domain.GameResultWithPlayerStats;
 import football.StatsManagement.model.domain.json.ClubForJson;
 import football.StatsManagement.model.domain.json.GameResultForJson;
+import football.StatsManagement.model.domain.json.GameResultWithPlayerStatsForJson;
 import football.StatsManagement.model.domain.json.LeagueForJson;
 import football.StatsManagement.model.domain.json.PlayerForJson;
 import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
 import football.StatsManagement.model.domain.json.SeasonForJson;
 import football.StatsManagement.repository.FootballRepository;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -543,6 +545,26 @@ class FootballServiceTest {
   }
 
   @Test
+  @DisplayName("試合結果と選手成績の登録_リポジトリが適切に処理されること")
+  void registerGameResultAndPlayerGameStats() {
+    // 現状テスト項目なし
+  }
+
+  @Test
+  @DisplayName("試合結果と選手成績の登録_試合日が不正な場合に例外処理が発生すること")
+  void registerGameResultAndPlayerGameStats_withInvalidDate() throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.of(2000, 1, 1), 202425);
+    List<PlayerGameStatForJson> homeClubStatsForJson = new ArrayList<>();
+    List<PlayerGameStatForJson> awayClubStatsForJson = new ArrayList<>();
+    GameResultWithPlayerStatsForJson gameResultWithPlayerStatsForJson = new GameResultWithPlayerStatsForJson(gameResultForJson, homeClubStatsForJson, awayClubStatsForJson);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResultWithPlayerStatsForJson, sut);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
+    // 例外が投げられることを確認、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
+    assertEquals("Game date is not in the current season", thrown.getMessage());
+  }
+
+  @Test
   @DisplayName("試合結果と選手成績の登録_ホームクラブのスコアが不正な場合に例外処理が発生すること")
   void registerGameResultAndPlayerGameStats_withInvalidHomeScore() throws Exception {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
@@ -557,6 +579,7 @@ class FootballServiceTest {
     );
     List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Home score is not correct", thrown.getMessage());
@@ -577,6 +600,7 @@ class FootballServiceTest {
     );
     List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Away score is not correct", thrown.getMessage());
@@ -597,6 +621,8 @@ class FootballServiceTest {
     );
     List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
+
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Home assists is more than home score", thrown.getMessage());
@@ -617,6 +643,8 @@ class FootballServiceTest {
     );
     List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
+
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Away assists is more than away score", thrown.getMessage());
@@ -637,6 +665,8 @@ class FootballServiceTest {
     );
     List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
+
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Home starter count is not correct", thrown.getMessage());
@@ -678,6 +708,8 @@ class FootballServiceTest {
     );
     List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
+
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Away starter count is not correct", thrown.getMessage());
@@ -718,6 +750,8 @@ class FootballServiceTest {
     );
     List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
+
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Home minutes is not correct", thrown.getMessage());
@@ -758,6 +792,8 @@ class FootballServiceTest {
     );
     List<PlayerGameStat> awayClubStats = sut.convertPlayerGameStatsForInsertToPlayerGameStats(awayClubStatsForJson);
     GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
+
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Away minutes is not correct", thrown.getMessage());

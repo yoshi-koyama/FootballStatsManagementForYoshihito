@@ -306,10 +306,7 @@ public class FootballController {
   public ResponseEntity<GameResultWithPlayerStats> registerGameResult(
       @RequestBody @Valid GameResultWithPlayerStatsForJson gameResultWithPlayerStatsForJson)
       throws FootballException, ResourceNotFoundException {
-    GameResult gameResult = new GameResult(gameResultWithPlayerStatsForJson.getGameResult());
-    List<PlayerGameStat> homeClubStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(gameResultWithPlayerStatsForJson.getHomeClubPlayerGameStats());
-    List<PlayerGameStat> awayClubStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(gameResultWithPlayerStatsForJson.getAwayClubPlayerGameStats());
-    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResult, homeClubStats, awayClubStats);
+    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResultWithPlayerStatsForJson, service);
 
     service.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats);
 

@@ -484,7 +484,7 @@ public class FootballService {
     awayClubStats = getPlayerGameStatsExceptAbsent(awayClubStats);
 
     // スタッツの整合性を確認
-    confirmGameResultAndPlayerGameStats(gameResultWithPlayerStats, homeClubStats, awayClubStats);
+    confirmGameResultAndPlayerGameStats(gameResult, homeClubStats, awayClubStats);
 
 //    試合結果を登録
     registerGameResult(gameResult);
@@ -502,15 +502,21 @@ public class FootballService {
 
   /**
    * Confirm game result and player game stats
-   * @param gameResultWithPlayerStats
+   * @param gameResult
    * @param homeClubStats
    * @param awayClubStats
    * @throws FootballException
    */
-  private void confirmGameResultAndPlayerGameStats(GameResultWithPlayerStats gameResultWithPlayerStats, List<PlayerGameStat> homeClubStats, List<PlayerGameStat> awayClubStats) throws FootballException {
+  private void confirmGameResultAndPlayerGameStats(GameResult gameResult, List<PlayerGameStat> homeClubStats, List<PlayerGameStat> awayClubStats) throws FootballException, ResourceNotFoundException {
+    // gameDateが今シーズンの範囲内か確認
+    Season season = repository.selectCurrentSeason()
+        .orElseThrow(() -> new ResourceNotFoundException("Current season not found"));
+    if (gameResult.getGameDate().isBefore(season.getStartDate()) || gameResult.getGameDate().isAfter(season.getEndDate())) {
+      throw new FootballException("Game date is not in the current season");
+    }
     // スコアが正しいか確認
-    int homeScore = gameResultWithPlayerStats.getGameResult().getHomeScore();
-    int awayScore = gameResultWithPlayerStats.getGameResult().getAwayScore();
+    int homeScore = gameResult.getHomeScore();
+    int awayScore = gameResult.getAwayScore();
     int homeScoreCalculated = getScoreByPlayerGameStats(homeClubStats);
     int awayScoreCalculated = getScoreByPlayerGameStats(awayClubStats);
     int homeAssists = homeClubStats.stream().mapToInt(PlayerGameStat::getAssists).sum();
