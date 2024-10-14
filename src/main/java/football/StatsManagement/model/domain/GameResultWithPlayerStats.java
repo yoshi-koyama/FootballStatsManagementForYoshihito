@@ -2,6 +2,8 @@ package football.StatsManagement.model.domain;
 
 import football.StatsManagement.model.data.GameResult;
 import football.StatsManagement.model.data.PlayerGameStat;
+import football.StatsManagement.model.domain.json.GameResultWithPlayerStatsForJson;
+import football.StatsManagement.service.FootballService;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,4 +16,10 @@ public class GameResultWithPlayerStats {
   private GameResult gameResult;
   private List<PlayerGameStat> homePlayerGameStats;
   private List<PlayerGameStat> awayPlayerGameStats;
+
+  public GameResultWithPlayerStats(GameResultWithPlayerStatsForJson gameResultWithPlayerStatsForJson, FootballService service) {
+    this.gameResult = new GameResult(gameResultWithPlayerStatsForJson.getGameResult());
+    this.homePlayerGameStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(gameResultWithPlayerStatsForJson.getHomeClubPlayerGameStats());
+    this.awayPlayerGameStats = service.convertPlayerGameStatsForInsertToPlayerGameStats(gameResultWithPlayerStatsForJson.getAwayClubPlayerGameStats());
+  }
 }
