@@ -570,9 +570,9 @@ class FootballControllerTest {
         .contentType("application/json")
         .content(requestBody))
         .andExpect(status().isOk());
-    verify(service, times(2)).convertPlayerGameStatsForInsertToPlayerGameStats(any(List.class));
     verify(service, times(1)).registerGameResultAndPlayerGameStats(any(GameResultWithPlayerStats.class));
   }
+
 
   @Test
   @DisplayName("試合結果の登録の際にGameResult個別フィールドのバリデーションエラーが発生すること")

@@ -94,6 +94,8 @@ function ClubsPage() {
       {/* クラブ一覧の表示 */}
       {!isStaidingView && (
         <>
+          {/* 試合結果登録画面へのリンク */}
+          <Link to={`/countries/${countryId}/leagues/${leagueId}/register-game-result`}>Register Game Result</Link>
           <ul>
             {clubs.map((club) => (
               <li key={club.id}>
