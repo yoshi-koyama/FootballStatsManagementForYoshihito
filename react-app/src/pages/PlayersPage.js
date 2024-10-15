@@ -30,14 +30,6 @@ function PlayersPage() {
     }
   }, [clubId, currentSeason]);
 
-  // numberが更新されたときにフォーカスを移動
-  useEffect(() => {
-    if (numberInputRef.current) {
-      numberInputRef.current.focus(); // number入力にフォーカスを移動
-    }
-  }, [number]); // numberが更新されるたびにフォーカスを設定
-
-
   // フォームの入力値を管理
   const handleInputChange = (e) => {
     const { name, value } = e.target; // 変更されたフィールドのnameとvalueを取得
