@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify'; // トースト通知を追加
 import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
@@ -29,6 +29,13 @@ function PlayersPage() {
       getPlayersSeasonStatsByClub(clubId, currentSeason.id, setPlayerSeasonStats);
     }
   }, [clubId, currentSeason]);
+
+  // numberが更新されたときにフォーカスを移動
+  useEffect(() => {
+    if (numberInputRef.current) {
+      numberInputRef.current.focus(); // number入力にフォーカスを移動
+    }
+  }, [number]); // numberが更新されるたびにフォーカスを設定
 
 
   // フォームの入力値を管理

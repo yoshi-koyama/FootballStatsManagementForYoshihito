@@ -36,3 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 /react-app/node_modules/
+/src/main/resources/static/static/
