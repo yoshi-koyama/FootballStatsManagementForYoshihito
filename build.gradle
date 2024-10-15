@@ -71,9 +71,15 @@ task buildReact(type: Exec) {
 	commandLine 'C:/Program Files/nodejs/npm.cmd', 'run', 'build'
 }
 
+// static フォルダを削除するタスク
+task deleteStatic(type: Delete) {
+	dependsOn buildReact // Reactのビルドが終わってからコピーを実行
+	delete "$projectDir/src/main/resources/static"
+}
+
 // Reactのビルド結果をSpring Bootのstaticフォルダにコピーするタスク
 task copyToStatic(type: Copy) {
-	dependsOn buildReact // Reactのビルドが終わってからコピーを実行
+	dependsOn deleteStatic // staticフォルダを削除してからコピーを実行
 	from "$projectDir/react-app/build"
 	into "$projectDir/src/main/resources/static"
 }
