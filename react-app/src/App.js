@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastProvider } from './contexts/ToastContext.js';
 
 import HomePage from './pages/HomePage.js';
 import RegisterSeasonPage from './pages/RegisterSeasonPage.js';
@@ -12,10 +11,9 @@ import ClubsPage from './pages/ClubsPage.js';
 import PlayersPage from './pages/PlayersPage.js';
 import PlayerPage from './pages/PlayerPage.js';
 
-
 function App() {
   return (
-    <div>
+    <ToastProvider>
       <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -41,18 +39,7 @@ function App() {
           {/* 各データのワード検索 */}
         </Routes>
       </Router>
-
-      {/* 共通の ToastContainer を App.js に設定 */}
-      <ToastContainer
-        position="top-center" // トーストの位置を真ん中上に設定
-        autoClose={3000} // 自動消去の時間を5秒に設定
-        hideProgressBar={false} // プログレスバーを表示
-        newestOnTop={true} // 最新のトーストを上に
-        closeOnClick // クリックで閉じる
-        pauseOnHover // ホバー中は一時停止
-        draggable // ドラッグで閉じる
-      />
-    </div>
+    </ToastProvider>
 
   );
 }

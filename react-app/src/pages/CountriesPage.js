@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify'; // トースト通知を追加
-import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { useToast } from '../contexts/ToastContext';
 import { getCountries } from '../apis/GetMappings.js';
 
 function CountriesPage() {
+  const { showToast } = useToast();
+
   const [countries, setCountries] = useState([]);
   const [newCountryName, setNewCountryName] = useState(''); // 新規登録用のstate
 
@@ -40,7 +41,7 @@ function CountriesPage() {
         setCountries([...countries, newCountry]); // 新しい国をリストに追加
         setNewCountryName(''); // 入力欄をリセット
         // 成功メッセージをトーストで表示
-        toast.success(`Country '${newCountry.name}' registered successfully!`);
+        showToast(`Country '${newCountry.name}' registered successfully!`);
       })
       .catch((error) => {
         alert('Error: ' + error.message);

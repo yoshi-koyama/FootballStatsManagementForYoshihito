@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify'; // トースト通知を追加
-import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '../contexts/ToastContext';
 import { getClubsByLeague, getCurrentSeason, getPlayersByClub, getClub } from '../apis/GetMappings';
 
 function RegisterGameResultPage() {
+    const navigate = useNavigate();
+    const { showToast } = useToast();
 
     const { countryId } = useParams(); // URLから国IDを取得
     const { leagueId } = useParams(); // URLからリーグIDを取得
@@ -114,9 +116,9 @@ function RegisterGameResultPage() {
                 return response.text().then((text) => { throw new Error(text); });
             })
             .then((newGameResult) => {
-                toast.success(`Game result registered successfully!`);
+                showToast(`Game result registered successfully!`);
                 // リーグページにリダイレクト
-                window.location.href = `/countries/${countryId}/leagues/${leagueId}/clubs`;
+                navigate(`/countries/${countryId}/leagues/${leagueId}/clubs`);
             })
             .catch((error) => {
                 alert('Error: ' + error.message);

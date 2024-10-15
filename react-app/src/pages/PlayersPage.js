@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify'; // トースト通知を追加
-import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { useToast } from '../contexts/ToastContext';
 import { getClub, getCurrentSeason, getPlayersByClub, getPlayersSeasonStatsByClub } from '../apis/GetMappings.js';
 
 function PlayersPage() {
+  const { showToast } = useToast();
+
   const { countryId } = useParams(); // URLから国IDを取得
   const { leagueId } = useParams(); // URLからリーグIDを取得
   const { clubId } = useParams(); // URLからリーグIDを取得
@@ -67,7 +68,7 @@ function PlayersPage() {
       .then((newPlayer) => {
         setPlayers([...players, newPlayer]); // 新しいクラブをリストに追加
         setNewPlayerName(''); // 入力欄をリセット
-        toast.success(`Player '${newPlayer.name}' registered successfully!`);
+        showToast(`Player '${newPlayer.name}' registered successfully!`);
       })
       .catch((error) => {
         alert('Error: ' + error.message);

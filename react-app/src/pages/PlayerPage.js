@@ -33,6 +33,7 @@ function PlayerPage() {
         if (selectedSeason) { // selectedSeasonが設定されている場合のみ実行
             getPlayerSeasonStat(playerId, selectedSeason.id, setPlayerSeasonStat);
         }
+        console.log(playerSeasonStat);
     }, [playerId, selectedSeason]);
 
     useEffect(() => {
@@ -46,6 +47,7 @@ function PlayerPage() {
             getClub(opponentClubId, setOpponentClub);
         }
     }, [opponentClubId]);
+
 
     const handleSeasonChange = (e) => {
         const selectedSeasonId = e.target.value;
