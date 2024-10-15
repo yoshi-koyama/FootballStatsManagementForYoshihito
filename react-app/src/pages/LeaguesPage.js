@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify'; // トースト通知を追加
-import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { useToast } from '../contexts/ToastContext';
 import { getCountry, getLeaguesByCountry } from '../apis/GetMappings';
 
 function LeaguesPage() {
+  const { showToast } = useToast();
+
   const { countryId } = useParams(); // URLから国IDを取得
   const [leagues, setLeagues] = useState([]);
   const [newLeagueName, setNewLeagueName] = useState(''); // 新規登録用のstate
@@ -46,7 +47,7 @@ function LeaguesPage() {
         .then((newLeague) => {
           setLeagues([...leagues, newLeague]); // 新しいリーグをリストに追加
           setNewLeagueName(''); // 入力欄をリセット
-          toast.success(`League '${newLeague.name}' registered successfully!`);
+          showToast(`League '${newLeague.name}' registered successfully!`);
         })
         .catch((error) => {
           alert('Error: ' + error.message);

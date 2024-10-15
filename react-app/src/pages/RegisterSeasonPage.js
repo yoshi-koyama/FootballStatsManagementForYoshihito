@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify'; // トースト通知を追加
-import 'react-toastify/dist/ReactToastify.css'; // トーストのスタイル
+import { useToast } from '../contexts/ToastContext';
 import { getCurrentSeason } from '../apis/GetMappings.js';
 
 function RegisterSeasonPage() {
+    const { showToast } = useToast();
 
     const [newSeasonName, setNewSeasonName] = useState(''); // 新規登録用のstate
     const [newStartDate, setNewStartDate] = useState(''); // 新規登録用のstate
@@ -55,7 +55,7 @@ function RegisterSeasonPage() {
                 setNewSeasonName(''); // 入力欄をリセット
                 setNewStartDate(''); // 入力欄をリセット
                 setNewEndDate(''); // 入力欄をリセット
-                toast.success(`Season '${newSeason.name}' registered successfully!`);
+                showToast(`Season '${newSeason.name}' registered successfully!`);
 
                 // 新しいシーズンが登録された後、現在のシーズンを再度更新
                 setCurrentSeason(newSeason); // 直接新しいシーズンで更新
