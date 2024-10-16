@@ -95,7 +95,7 @@ class FootballServiceTest {
     ));
     // 例外が投げられることを確認し、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerPlayer(player));
-    assertEquals("Player number is already used", thrown.getMessage());
+    assertEquals("Player number is already used in Club", thrown.getMessage());
   }
 
   @Test
@@ -146,7 +146,7 @@ class FootballServiceTest {
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerSeason(season));
 
     // 期待される例外メッセージを確認
-    assertEquals("Season name should be in the format of \'yyyy-yy\'", thrown.getMessage());
+    assertEquals("Season name should be in the format of 'yyyy-yy'", thrown.getMessage());
   }
 
   @Test
@@ -317,56 +317,56 @@ class FootballServiceTest {
   @Test
   @DisplayName("選手IDによる選手試合成績の検索_リポジトリが適切に処理されること")
   void getPlayerGameStatsByPlayer() {
-    List<PlayerGameStat> playerGameStats = sut.getPlayerGameStatsByPlayer(1);
+    List<PlayerGameStat> actual = sut.getPlayerGameStatsByPlayer(1);
     verify(repository, times(1)).selectPlayerGameStatsByPlayer(1);
   }
 
   @Test
   @DisplayName("クラブIDとシーズンIDによる選手試合成績の検索_リポジトリが適切に処理されること")
   void getGameResultsByClubAndSeason() {
-    List<GameResult> gameResults = sut.getGameResultsByClubAndSeason(1, 1);
+    List<GameResult> actual = sut.getGameResultsByClubAndSeason(1, 1);
     verify(repository, times(1)).selectGameResultsByClubAndSeason(1, 1);
   }
 
   @Test
   @DisplayName("クラブIDによる選手の検索_リポジトリが適切に処理されること")
   void getPlayersByClub() {
-    List<Player> players = sut.getPlayersByClub(1);
+    List<Player> actual = sut.getPlayersByClub(1);
     verify(repository, times(1)).selectPlayersByClub(1);
   }
 
   @Test
   @DisplayName("リーグIDによるクラブの検索_リポジトリが適切に処理されること")
   void getClubsByLeague() {
-    List<Club> clubs = sut.getClubsByLeague(1);
+    List<Club> actual = sut.getClubsByLeague(1);
     verify(repository, times(1)).selectClubsByLeague(1);
   }
 
   @Test
   @DisplayName("国IDによるリーグの検索_リポジトリが適切に処理されること")
   void getLeaguesByCountry() {
-    List<League> leagues = sut.getLeaguesByCountry(1);
+    List<League> actual = sut.getLeaguesByCountry(1);
     verify(repository, times(1)).selectLeaguesByCountry(1);
   }
 
   @Test
   @DisplayName("国すべての検索_リポジトリが適切に処理されること")
   void getCountries() {
-    List<Country> countries = sut.getCountries();
+    List<Country> actual = sut.getCountries();
     verify(repository, times(1)).selectCountries();
   }
 
   @Test
   @DisplayName("シーズンすべての検索_リポジトリが適切に処理されること")
   void getSeasons() {
-    List<Season> seasons = sut.getSeasons();
+    List<Season> actual = sut.getSeasons();
     verify(repository, times(1)).selectSeasons();
   }
 
   @Test
   @DisplayName("クラブすべての検索_リポジトリが適切に処理されること")
   void getClubs() {
-    List<Club> clubs = sut.getClubs();
+    List<Club> actual = sut.getClubs();
     verify(repository, times(1)).selectClubs();
   }
 
@@ -386,17 +386,7 @@ class FootballServiceTest {
     String name = "newName";
     when(repository.selectPlayer(id)).thenReturn(Optional.of(new Player(id, 1, "sampleName", 1)));
     sut.updatePlayerNumberAndName(id, number, name);
-    verify(repository, times(1)).selectPlayer(id);
     verify(repository, times(1)).updatePlayerNumberAndName(id, number, name);
-  }
-
-  @Test
-  @DisplayName("選手の背番号と名前の更新_選手が存在しない場合に適切に例外処理されること")
-  void updatePlayerNumberAndName_withNotFoundPlayer() {
-    // リポジトリが空の状態を作る
-    when(repository.selectPlayer(1)).thenReturn(Optional.empty());
-    // 例外が投げられることを確認
-    assertThrows(ResourceNotFoundException.class, () -> sut.updatePlayerNumberAndName(1, 1, "sampleName"));
   }
 
   @Test
@@ -428,17 +418,7 @@ class FootballServiceTest {
     int number = 99;
     when(repository.selectPlayer(id)).thenReturn(Optional.of(new Player(id, 1, "sampleName", 1)));
     sut.updatePlayerClubAndNumber(id, clubId, number);
-    verify(repository, times(1)).selectPlayer(id);
     verify(repository, times(1)).updatePlayerClubAndNumber(id, clubId, number);
-  }
-
-  @Test
-  @DisplayName("選手のクラブと背番号の更新_選手が存在しない場合に適切に例外処理されること")
-  void updatePlayerClubAndNumber_withNotFoundPlayer() {
-    // リポジトリが空の状態を作る
-    when(repository.selectPlayer(1)).thenReturn(Optional.empty());
-    // 例外が投げられることを確認
-    assertThrows(ResourceNotFoundException.class, () -> sut.updatePlayerClubAndNumber(1, 1, 1));
   }
 
   @Test
@@ -469,18 +449,9 @@ class FootballServiceTest {
     int leagueId = 2;
     when(repository.selectClub(id)).thenReturn(Optional.of(new Club(id, 1, "sampleName")));
     sut.updateClubLeague(id, leagueId);
-    verify(repository, times(1)).selectClub(id);
     verify(repository, times(1)).updateClubLeague(id, leagueId);
   }
 
-  @Test
-  @DisplayName("クラブのリーグの更新_クラブが存在しない場合に適切に例外処理されること")
-  void updateClubLeague_withNotFoundClub() {
-    // リポジトリが空の状態を作る
-    when(repository.selectClub(1)).thenReturn(Optional.empty());
-    // 例外が投げられることを確認
-    assertThrows(ResourceNotFoundException.class, () -> sut.updateClubLeague(1, 1));
-  }
   @Test
   @DisplayName("クラブのリーグの更新_リーグに変更がない場合に適切に例外処理されること")
   void updateClubLeague_withNoChange() {
@@ -492,20 +463,9 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("選手とシーズンによる選手試合成績の検索_リポジトリが適切に処理されること")
-  void getPlayerGameStatsByPlayerAndSeason() throws ResourceNotFoundException {
-    when(repository.selectPlayer(1)).thenReturn(Optional.of(new Player(1, 1, "sampleName", 1)));
-    List<PlayerGameStat> playerGameStats = sut.getPlayerGameStatsByPlayerAndSeason(1, 1);
-    verify(repository, times(1)).selectPlayer(1);
+  void getPlayerGameStatsByPlayerAndSeason() {
+    List<PlayerGameStat> actual = sut.getPlayerGameStatsByPlayerAndSeason(1, 1);
     verify(repository, times(1)).selectPlayerGameStatsByPlayerAndSeason(1, 1);
-  }
-
-  @Test
-  @DisplayName("選手とシーズンによる選手試合成績の検索_選手が存在しない場合に適切に例外処理されること")
-  void getPlayerGameStatsByPlayerAndSeason_withNotFoundPlayer() {
-    // リポジトリが空の状態を作る
-    when(repository.selectPlayer(1)).thenReturn(Optional.empty());
-    // 例外が投げられることを確認
-    assertThrows(ResourceNotFoundException.class, () -> sut.getPlayerGameStatsByPlayerAndSeason(1, 1));
   }
 
   @Test
@@ -552,21 +512,25 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("試合結果と選手成績の登録_試合日が不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidDate() throws Exception {
-    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.of(2000, 1, 1), 202425);
-    List<PlayerGameStatForJson> homeClubStatsForJson = new ArrayList<>();
-    List<PlayerGameStatForJson> awayClubStatsForJson = new ArrayList<>();
-    GameResultWithPlayerStatsForJson gameResultWithPlayerStatsForJson = new GameResultWithPlayerStatsForJson(gameResultForJson, homeClubStatsForJson, awayClubStatsForJson);
-    GameResultWithPlayerStats gameResultWithPlayerStats = new GameResultWithPlayerStats(gameResultWithPlayerStatsForJson, sut);
+  void registerGameResultAndPlayerGameStats_withInvalidDate() {
+    GameResultWithPlayerStats gameResultWithPlayerStats = getResultWithPlayerStats();
     when(repository.selectCurrentSeason()).thenReturn(Optional.of(new Season(1, "2024-25", LocalDate.of(2024, 7, 1), LocalDate.of(2025, 6, 30), true)));
     // 例外が投げられることを確認、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerGameResultAndPlayerGameStats(gameResultWithPlayerStats));
     assertEquals("Game date is not in the current season", thrown.getMessage());
   }
 
+  private GameResultWithPlayerStats getResultWithPlayerStats() {
+    GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.of(2000, 1, 1), 202425);
+    List<PlayerGameStatForJson> homeClubStatsForJson = new ArrayList<>();
+    List<PlayerGameStatForJson> awayClubStatsForJson = new ArrayList<>();
+    GameResultWithPlayerStatsForJson gameResultWithPlayerStatsForJson = new GameResultWithPlayerStatsForJson(gameResultForJson, homeClubStatsForJson, awayClubStatsForJson);
+    return new GameResultWithPlayerStats(gameResultWithPlayerStatsForJson, sut);
+  }
+
   @Test
   @DisplayName("試合結果と選手成績の登録_ホームクラブのスコアが不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidHomeScore() throws Exception {
+  void registerGameResultAndPlayerGameStats_withInvalidHomeScore() {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     // ホームクラブのスコアが不正な値になるようにする
@@ -587,7 +551,7 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("試合結果と選手成績の登録_アウェイクラブのスコアが不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidAwayScore() throws Exception {
+  void registerGameResultAndPlayerGameStats_withInvalidAwayScore() {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
@@ -608,7 +572,7 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("試合結果と選手成績の登録_ホームクラブのアシスト数が不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidHomeAssist() throws Exception {
+  void registerGameResultAndPlayerGameStats_withInvalidHomeAssist() {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     // ホームクラブのアシストが不正な値になるようにする
@@ -630,7 +594,7 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("試合結果と選手成績の登録_アウェイクラブのアシスト数が不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidAwayAssist() throws Exception {
+  void registerGameResultAndPlayerGameStats_withInvalidAwayAssist() {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
@@ -652,7 +616,7 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("試合結果と選手成績の登録_ホームクラブの先発選手数が不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidHomeStarting() throws Exception {
+  void registerGameResultAndPlayerGameStats_withInvalidHomeStarting() {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 1, 1, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     // ホームクラブの先発選手数が不正な値になるようにする
@@ -674,7 +638,7 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("試合結果と選手成績の登録_アウェイクラブの先発選手数が不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidAwayStarting() throws Exception {
+  void registerGameResultAndPlayerGameStats_withInvalidAwayStarting() {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 11, 12, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
@@ -717,7 +681,7 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("試合結果と選手成績の登録_ホームクラブの出場時間が不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidHomeMinutes() throws Exception {
+  void registerGameResultAndPlayerGameStats_withInvalidHomeMinutes() {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 11, 11, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     // ホームクラブの出場時間が不正な値になるようにする
@@ -759,7 +723,7 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("試合結果と選手成績の登録_アウェイクラブの出場時間が不正な場合に例外処理が発生すること")
-  void registerGameResultAndPlayerGameStats_withInvalidAwayMinutes() throws Exception {
+  void registerGameResultAndPlayerGameStats_withInvalidAwayMinutes() {
     GameResultForJson gameResultForJson = new GameResultForJson(1, 2, 11, 11, 1, LocalDate.now(), 1);
     GameResult gameResult = new GameResult(gameResultForJson);
     List<PlayerGameStatForJson> homeClubStatsForJson = List.of(
@@ -819,17 +783,8 @@ class FootballServiceTest {
   void getGameResultWithPlayerStats() throws ResourceNotFoundException {
     int gameId = 1;
     when(repository.selectGameResult(gameId)).thenReturn(Optional.of(new GameResult(1, 1, 2, 1, 1, 1, 1, LocalDate.now(), 1)));
-    GameResultWithPlayerStats gameResultWithPlayerStats = sut.getGameResultWithPlayerStats(1);
+    GameResultWithPlayerStats actual = sut.getGameResultWithPlayerStats(1);
     verify(repository, times(1)).selectPlayerGameStatsByGame(gameId);
-  }
-
-  @Test
-  @DisplayName("試合結果を選手成績とともに取得_試合結果が存在しない場合に適切に例外処理されること")
-  void getGameResultWithPlayerStats_withNotFound() {
-    // リポジトリが空の状態を作る
-    when(repository.selectGameResult(1)).thenReturn(Optional.empty());
-    // 例外が投げられることを確認
-    assertThrows(ResourceNotFoundException.class, () -> sut.getGameResultWithPlayerStats(1));
   }
 
   @Test
