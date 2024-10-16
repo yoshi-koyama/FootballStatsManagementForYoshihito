@@ -18,9 +18,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +70,7 @@ public class FootballService {
     List<Player> players = getPlayersByClub(player.getClubId());
     for (Player p : players) {
       if (p.getNumber() == player.getNumber()) {
-        throw new FootballException("Player number is already used");
+        throw new FootballException("Player number is already used in Club");
       }
     }
     repository.insertPlayer(player);
@@ -268,7 +266,6 @@ public class FootballService {
 
   /**
    * Get current season
-   * @param
    * @return current season
    */
   public Season getCurrentSeason() throws ResourceNotFoundException {
@@ -317,8 +314,7 @@ public class FootballService {
   @Transactional
   public void updatePlayerNumberAndName(int id, int number, String name)
       throws ResourceNotFoundException, FootballException, ResourceConflictException {
-    Player player = repository.selectPlayer(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+    Player player = getPlayer(id);
     // numberが重複していないか確認
     List<Player> players = getPlayersByClub(player.getClubId());
     for (Player p : players) {
@@ -336,8 +332,7 @@ public class FootballService {
   @Transactional
   public void updatePlayerClubAndNumber(int id, int clubId, int number)
       throws ResourceNotFoundException, FootballException, ResourceConflictException {
-    Player player = repository.selectPlayer(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+    Player player = getPlayer(id);
     // クラブが変更されているかを確認
     if (player.getClubId() == clubId) {
       throw new ResourceConflictException("Player club is not changed");
@@ -354,8 +349,7 @@ public class FootballService {
 
   @Transactional
   public void updateClubLeague(int id, int leagueId) throws ResourceNotFoundException, ResourceConflictException {
-    Club club = repository.selectClub(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Club not found"));
+    Club club = getClub(id);
     // リーグが変更されているかを確認
     if (club.getLeagueId() == leagueId) {
       throw new ResourceConflictException("Club league is not changed");
@@ -365,9 +359,7 @@ public class FootballService {
 
 
 //  other
-  public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) throws ResourceNotFoundException {
-    Player player = repository.selectPlayer(playerId)
-        .orElseThrow(() -> new ResourceNotFoundException("Player not found"));
+  public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) {
     return repository.selectPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
   }
 
@@ -509,8 +501,7 @@ public class FootballService {
    */
   private void confirmGameResultAndPlayerGameStats(GameResult gameResult, List<PlayerGameStat> homeClubStats, List<PlayerGameStat> awayClubStats) throws FootballException, ResourceNotFoundException {
     // gameDateが今シーズンの範囲内か確認
-    Season season = repository.selectCurrentSeason()
-        .orElseThrow(() -> new ResourceNotFoundException("Current season not found"));
+    Season season = getCurrentSeason();
     if (gameResult.getGameDate().isBefore(season.getStartDate()) || gameResult.getGameDate().isAfter(season.getEndDate())) {
       throw new FootballException("Game date is not in the current season");
     }
@@ -575,8 +566,7 @@ public class FootballService {
   }
 
   public GameResultWithPlayerStats getGameResultWithPlayerStats(int gameId) throws ResourceNotFoundException {
-    GameResult gameResult = repository.selectGameResult(gameId)
-        .orElseThrow(() -> new ResourceNotFoundException("Game result not found"));
+    GameResult gameResult = getGameResult(gameId);
     List<PlayerGameStat> playerGameStats = repository.selectPlayerGameStatsByGame(gameId);
     List<PlayerGameStat> homeClubStats = playerGameStats.stream()
         .filter(playerGameStat -> playerGameStat.getClubId() == gameResult.getHomeClubId())
