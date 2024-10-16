@@ -68,7 +68,7 @@ node {
 // Reactアプリをビルドするタスク
 task buildReact(type: Exec) {
 	workingDir "$projectDir/react-app"
-	commandLine 'C:/Program Files/nodejs/npm.cmd', 'run', 'build'
+	commandLine 'npm.cmd', 'run', 'build'
 }
 
 // static フォルダを削除するタスク
@@ -86,5 +86,14 @@ task copyToStatic(type: Copy) {
 
 // パッケージング時にもReactのビルドとコピーが行われるように設定
 processResources.dependsOn copyToStatic
+
+gradle.taskGraph.whenReady { taskGraph ->
+	if (taskGraph.hasTask(':test')) {
+		// テスト実行時にReact関連タスクを無効にする
+		tasks.buildReact.enabled = false
+		tasks.deleteStatic.enabled = false
+		tasks.copyToStatic.enabled = false
+	}
+}
 
 
