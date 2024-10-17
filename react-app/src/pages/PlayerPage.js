@@ -49,7 +49,6 @@ function PlayerPage() {
 
 
     const handleSeasonChange = (e) => {
-        console.log("handleSeasonChange");
         const selectedSeasonId = Number(e.target.value);
         const season = seasons.find((season) => season.id === selectedSeasonId); // idに基づいてシーズンを検索
         setSelectedSeason(season); // 選択したシーズンオブジェクトをセット
