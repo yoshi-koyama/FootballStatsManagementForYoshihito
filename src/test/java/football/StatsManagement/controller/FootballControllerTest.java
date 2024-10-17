@@ -272,10 +272,10 @@ class FootballControllerTest {
 
   @Test
   @DisplayName("選手IDとシーズンIDに紐づく選手のシーズン成績を取得できること")
-  void getPlayerSeasonStatByClub() throws Exception {
+  void getPlayerSeasonStats() throws Exception {
     int playerId = 1;
     int seasonId = 100001;
-    mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stat/" + seasonId))
+    mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stats/" + seasonId))
         .andExpect(status().isOk());
     verify(service, times(1)).getPlayerSeasonStatByPlayerId(playerId, seasonId);
   }
@@ -286,26 +286,26 @@ class FootballControllerTest {
       "1, 0"
   })
   @DisplayName("選手IDとシーズンIDに紐づく選手のシーズン成績を取得する際のIDのバリデーションテスト")
-  void getPlayerSeasonStatWithInvalidIdByClub(int playerId, int seasonId) throws Exception {
-    mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stat/" + seasonId))
+  void getPlayerSeasonStatsWithInvalidId(int playerId, int seasonId) throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stats/" + seasonId))
         .andExpect(status().isBadRequest())
         .andExpect(result -> assertTrue(result.getResolvedException() instanceof ConstraintViolationException));
   }
 
   @Test
   @DisplayName("選手IDに紐づく選手の通算成績を取得できること")
-  void getPlayerSeasonStatsByPlayerIdByClub() throws Exception {
+  void getPlayerCareerStatsByPlayerIdByClub() throws Exception {
     int playerId = 1;
-    mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stats"))
+    mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-career-stats"))
         .andExpect(status().isOk());
     verify(service, times(1)).getPlayerSeasonStatsByPlayerId(playerId);
   }
 
   @Test
   @DisplayName("選手IDに紐づく選手の通算成績を取得する際にIDが0以下の場合、400エラーが返却されること")
-  void getPlayerSeasonStatsByPlayerIdWithInvalidIdByClub() throws Exception {
+  void getPlayerCareerStatsByPlayerIdWithInvalidIdByClub() throws Exception {
     int playerId = 0;
-    mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-season-stats"))
+    mockMvc.perform(MockMvcRequestBuilders.get("/players/" + playerId + "/player-career-stats"))
         .andExpect(status().isBadRequest())
         .andExpect(result -> assertTrue(result.getResolvedException() instanceof ConstraintViolationException));
   }

@@ -208,24 +208,9 @@ export const getCurrentSeason = async (setCurrentSeason) => {
     }
   }
   
-  export const getPlayerSeasonStat = async (playerId, seasonId , setPlayerSeasonStat) => {
+  export const getPlayerSeasonStats = async (playerId, seasonId , setPlayerSeasonStats) => {
     try {
         const response = await fetch(`/players/${playerId}/player-season-stat/${seasonId}`);
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(text);
-        }
-        const data = await response.json();
-        setPlayerSeasonStat(data);
-    } catch (error) {
-        alert('Error: ' + error.message);
-        console.error(error);
-    }
-  }
-  
-  export const getPlayerSeasonStats = async (playerId, setPlayerSeasonStats) => {
-    try {
-        const response = await fetch(`/players/${playerId}/player-season-stats`);
         if (!response.ok) {
             const text = await response.text();
             throw new Error(text);
@@ -238,9 +223,24 @@ export const getCurrentSeason = async (setCurrentSeason) => {
     }
   }
   
+  export const getPlayerCareerStats = async (playerId, setPlayerCareerStats) => {
+    try {
+        const response = await fetch(`/players/${playerId}/player-career-stats`);
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text);
+        }
+        const data = await response.json();
+        setPlayerCareerStats(data);
+    } catch (error) {
+        alert('Error: ' + error.message);
+        console.error(error);
+    }
+  }
+  
   export const getGameResult = async (gameId, setGameResult) => {
     try {
-        const response = await fetch(`/games/${gameId}`);
+        const response = await fetch(`/game-results/${gameId}`);
         if (!response.ok) {
             const text = await response.text();
             throw new Error(text);
