@@ -113,8 +113,9 @@ function PlayerPage() {
                     <table>
                         <thead>
                             <tr>
-                                {/* <th>Date</th>
-                                <th>Opponent</th> */}
+                                <th>Date</th>
+                                <th>Opponent</th>
+                                <th>Score</th>
                                 <th>Goals</th>
                                 <th>Assists</th>
                                 <th>Yellow Cards</th>
@@ -125,12 +126,9 @@ function PlayerPage() {
                             {playerSeasonStats.map((seasonStat) => (
                                 seasonStat.playerGameStats.map((gameStat) => (
                                     <tr key={gameStat.gameId}>
-                                        {/* <td>{gameStat.date}</td>
-                                        <td>
-                                            <Link to={`/countries/${countryId}/leagues/${leagueId}/clubs/${opponentClubId}/players`}>
-                                                {opponentClub?.name}
-                                            </Link>
-                                        </td> */}
+                                        <td>{gameStat.gameDate}</td>
+                                        <td>{gameStat.opponentClubName}</td>
+                                        <td>{gameStat.score}</td>
                                         <td>{gameStat.goals}</td>
                                         <td>{gameStat.assists}</td>
                                         <td>{gameStat.yellowCards}</td>

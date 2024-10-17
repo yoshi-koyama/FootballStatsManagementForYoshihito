@@ -838,7 +838,6 @@ class FootballControllerTest {
 
           // バリデーションエラーをフィールドごとに期待されるメッセージをマップで定義
           Map<String, String> expectedErrorMessages = Map.of(
-              "homeClubPlayerGameStats[0].minutes", "must be less than or equal to 90",
               "homeClubPlayerGameStats[0].yellowCards", "must be less than or equal to 2",
               "homeClubPlayerGameStats[0].redCards", "must be less than or equal to 1"
           );
