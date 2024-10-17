@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getSeasons, getCurrentSeason, getPlayer, getPlayerSeasonStats, getPlayerSeasonStat} from '../apis/GetMappings';
+import { getSeasons, getCurrentSeason, getPlayer, getPlayerCareerStats, getPlayerSeasonStats} from '../apis/GetMappings';
 import { getGameResult, getClub } from './../apis/GetMappings';
 
 function PlayerPage() {
@@ -9,8 +9,8 @@ function PlayerPage() {
     const { clubId } = useParams(); // URLからクラブIDを取得
     const { playerId } = useParams(); // URLから選手IDを取得
     const [player, setPlayer] = useState([]);
-    const [playerSeasonStat, setPlayerSeasonStat] = useState([]); // 選手のシーズン成績を管理するstate
-    const [playerSeasonStats, setPlayerSeasonStats] = useState([]); // 選手の通算成績を管理するstate
+    const [playerSeasonStats, setPlayerSeasonStats] = useState([]); // 選手のシーズン成績を管理するstate
+    const [playerCareerStats, setPlayerCareerStats] = useState([]); // 選手の通算成績を管理するstate
     const [seasons, setSeasons] = useState([]); // シーズン一覧を管理するstate
     const [selectedSeason, setSelectedSeason] = useState(null); // 選択中のシーズンを管理するstate
     const [isSeasonStatsView, setIsSeasonStatsView] = useState(true); // シーズン成績表示切り替え用のstate
@@ -26,14 +26,14 @@ function PlayerPage() {
 
     useEffect(() => {
         getPlayer(playerId, setPlayer);
-        getPlayerSeasonStats(playerId, setPlayerSeasonStats);
+        getPlayerCareerStats(playerId, setPlayerCareerStats);
     }, [playerId]);
 
     useEffect(() => {
         if (selectedSeason) { // selectedSeasonが設定されている場合のみ実行
-            getPlayerSeasonStat(playerId, selectedSeason.id, setPlayerSeasonStat);
+            getPlayerSeasonStats(playerId, selectedSeason.id, setPlayerSeasonStats);
         }
-        console.log(playerSeasonStat);
+        console.log(playerSeasonStats);
     }, [playerId, selectedSeason]);
 
     useEffect(() => {
@@ -98,11 +98,11 @@ function PlayerPage() {
                         </thead>
                         <tbody>
                             <tr>
-                                <td>{playerSeasonStat.games}</td>
-                                <td>{playerSeasonStat.goals}</td>
-                                <td>{playerSeasonStat.assists}</td>
-                                <td>{playerSeasonStat.yellowCards}</td>
-                                <td>{playerSeasonStat.redCards}</td>
+                                <td>{playerSeasonStats.games}</td>
+                                <td>{playerSeasonStats.goals}</td>
+                                <td>{playerSeasonStats.assists}</td>
+                                <td>{playerSeasonStats.yellowCards}</td>
+                                <td>{playerSeasonStats.redCards}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -121,7 +121,7 @@ function PlayerPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {playerSeasonStat.playerGameStats.map((gameStat) => {
+                            {playerSeasonStats.playerGameStats.map((gameStat) => {
                                 setGameId(gameStat.gameId);
 
                                 const date =gameResult.gameDate;
@@ -164,7 +164,7 @@ function PlayerPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {playerSeasonStats.map((playerSeasonStat) => (
+                            {playerCareerStats.map((playerSeasonStat) => (
                                 <tr key={playerSeasonStat.seasonId}>
                                     <td>{playerSeasonStat.seasonName}</td>
                                     <td>{playerSeasonStat.clubName}</td>

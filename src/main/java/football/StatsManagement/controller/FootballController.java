@@ -211,8 +211,8 @@ public class FootballController {
    * @return 選手のシーズン成績
    */
   @Operation(summary = "選手シーズン成績の取得", description = "選手IDとシーズンIDに紐づく選手成績を取得します")
-  @GetMapping("/players/{playerId}/player-season-stat/{seasonId}")
-  public List<PlayerSeasonStat> getPlayerSeasonStat(@PathVariable @Positive int playerId, @PathVariable @Min(100000) int seasonId)
+  @GetMapping("/players/{playerId}/player-season-stats/{seasonId}")
+  public List<PlayerSeasonStat> getPlayerSeasonStats(@PathVariable @Positive int playerId, @PathVariable @Min(100000) int seasonId)
       throws ResourceNotFoundException {
     return service.getPlayerSeasonStatByPlayerId(playerId, seasonId);
   }
@@ -222,8 +222,8 @@ public class FootballController {
    * @param playerId
    * @return 選手のシーズン成績リスト
    */
-  @GetMapping("/players/{playerId}/player-season-stats")
-  public List<PlayerSeasonStat> getPlayerSeasonStatsByPlayerId(@PathVariable @Positive int playerId)
+  @GetMapping("/players/{playerId}/player-career-stats")
+  public List<PlayerSeasonStat> getPlayerCareerStatsByPlayerId(@PathVariable @Positive int playerId)
       throws ResourceNotFoundException {
     return service.getPlayerSeasonStatsByPlayerId(playerId);
   }
