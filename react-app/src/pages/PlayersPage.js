@@ -5,6 +5,7 @@ import { getClub, getCurrentSeason, getPlayersByClub, getPlayersSeasonStatsByClu
 
 function PlayersPage() {
   const { showToast } = useToast();
+  const numberInputRef = useRef(null); // 背番号入力欄の参照を作成
 
   const { countryId } = useParams(); // URLから国IDを取得
   const { leagueId } = useParams(); // URLからリーグIDを取得
@@ -68,7 +69,16 @@ function PlayersPage() {
       .then((newPlayer) => {
         setPlayers([...players, newPlayer]); // 新しいクラブをリストに追加
         setNewPlayerName(''); // 入力欄をリセット
+        setNumber((prevNumber) => {
+          const nextNumber = String(parseInt(prevNumber) + 1);
+          return nextNumber;
+        });
         showToast(`Player '${newPlayer.name}' registered successfully!`);
+        // フォーカスを当て、選択状態にする
+        if (numberInputRef.current) {
+          numberInputRef.current.focus();
+          numberInputRef.current.select();
+        }
       })
       .catch((error) => {
         alert('Error: ' + error.message);
@@ -120,6 +130,7 @@ function PlayersPage() {
             value={number}
             onChange={handleInputChange}
             required
+            ref={numberInputRef}
         />
         <input
           type="text"

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
 import { getClubsByLeague, getCurrentSeason, getLeague, getSeasons, getStanding } from '../apis/GetMappings';
 
 function ClubsPage() {
-const { showToast } = useToast();
+  const { showToast } = useToast();
+  const nameInputRef = useRef(null); // クラブ名入力欄の参照を作成
 
   const { countryId } = useParams(); // URLから国IDを取得
   const { leagueId } = useParams(); // URLからリーグIDを取得
@@ -70,6 +71,7 @@ const { showToast } = useToast();
         setClubs([...clubs, newClub]); // 新しいクラブをリストに追加
         setNewClubName(''); // 入力欄をリセット
         showToast(`Club '${newClub.name}' registered successfully!`);
+        nameInputRef.current.focus(); // クラブ名入力欄にフォーカスを移動
       })
       .catch((error) => {
         alert('Error: ' + error.message);
@@ -114,6 +116,7 @@ const { showToast } = useToast();
               value={newClubName}
               onChange={handleInputChange}
               required
+              ref={nameInputRef}
             />
             <button type="submit">Register</button>
           </form>
