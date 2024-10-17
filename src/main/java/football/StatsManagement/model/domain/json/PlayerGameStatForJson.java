@@ -25,7 +25,6 @@ public class PlayerGameStatForJson {
   private int assists;
 
   @PositiveOrZero
-  @Max(90)
   private int minutes;
 
   @PositiveOrZero

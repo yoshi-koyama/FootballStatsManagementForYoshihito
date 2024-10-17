@@ -299,7 +299,7 @@ class FootballServiceTest {
   @Test
   @DisplayName("IDによる選手試合成績の検索_リポジトリが適切に処理されること")
   void getPlayerGameStat() throws ResourceNotFoundException {
-    PlayerGameStat playerGameStat = new PlayerGameStat(1, 1, 1, 1, true, 1, 1, 1, 1, 1, 1);
+    PlayerGameStat playerGameStat = new PlayerGameStat(1, 1, 1, 1, true, 1, 1, 1, 1, 1, 1, null, null, null);
     when(repository.selectPlayerGameStat(1)).thenReturn(Optional.of(playerGameStat));
     PlayerGameStat actual = sut.getPlayerGameStat(1);
     verify(repository, times(1)).selectPlayerGameStat(1);
@@ -463,7 +463,7 @@ class FootballServiceTest {
 
   @Test
   @DisplayName("選手とシーズンによる選手試合成績の検索_リポジトリが適切に処理されること")
-  void getPlayerGameStatsByPlayerAndSeason() {
+  void getPlayerGameStatsByPlayerAndSeason() throws ResourceNotFoundException {
     List<PlayerGameStat> actual = sut.getPlayerGameStatsByPlayerAndSeason(1, 1);
     verify(repository, times(1)).selectPlayerGameStatsByPlayerAndSeason(1, 1);
   }

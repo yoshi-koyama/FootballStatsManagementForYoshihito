@@ -1,6 +1,7 @@
 package football.StatsManagement.model.data;
 
 import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
+import java.time.LocalDate;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,11 @@ public class PlayerGameStat {
   // テスト用Inset文の都合上順序は最後に変更
   private int gameId;
 
+  // 以下@GetMappingのみで使用するフィールド
+  private LocalDate gameDate;
+  private String opponentClubName;
+  private String score;
+
   // @Insert用
   public PlayerGameStat(PlayerGameStatForJson playerGameStatForJson) {
     this.id = 0;
@@ -38,6 +44,21 @@ public class PlayerGameStat {
     this.minutes = playerGameStatForJson.getMinutes();
     this.yellowCards = playerGameStatForJson.getYellowCards();
     this.redCards = playerGameStatForJson.getRedCards();
+  }
+
+  // @Select用（DBに存在しないフィールドは除外）
+  public PlayerGameStat(int id, int playerId, int clubId, int number, boolean starter, int goals, int assists, int minutes, int yellowCards, int redCards, int gameId) {
+    this.id = id;
+    this.playerId = playerId;
+    this.clubId = clubId;
+    this.number = number;
+    this.starter = starter;
+    this.goals = goals;
+    this.assists = assists;
+    this.minutes = minutes;
+    this.yellowCards = yellowCards;
+    this.redCards = redCards;
+    this.gameId = gameId;
   }
 
   public void setGameInfo(int gameId, int clubId, int number) {

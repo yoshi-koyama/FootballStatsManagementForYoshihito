@@ -359,8 +359,28 @@ public class FootballService {
 
 
 //  other
-  public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) {
-    return repository.selectPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
+  public List<PlayerGameStat> getPlayerGameStatsByPlayerAndSeason(int playerId, int seasonId) throws ResourceNotFoundException {
+    List<PlayerGameStat> playerGameStats = repository.selectPlayerGameStatsByPlayerAndSeason(playerId, seasonId);
+    // @GetMapping用にgameDate, opponentClubName, scoreを追加
+    for (PlayerGameStat playerGameStat : playerGameStats) {
+      GameResult gameResult = getGameResult(playerGameStat.getGameId());
+      // gameDate
+      playerGameStat.setGameDate(gameResult.getGameDate());
+      // opponentClubName
+      int opponentClubId = gameResult.getHomeClubId() == playerGameStat.getClubId() ? gameResult.getAwayClubId() : gameResult.getHomeClubId();
+      playerGameStat.setOpponentClubName(getClub(opponentClubId).getName());
+      // score
+      String score = gameResult.getHomeScore() + "-" + gameResult.getAwayScore();
+      if (gameResult.getWinnerClubId() == null) {
+        score = "△" + score;
+      } else if (gameResult.getWinnerClubId() == playerGameStat.getClubId()) {
+        score = "○" + score;
+      } else {
+        score = "●" + score;
+      }
+      playerGameStat.setScore(score);
+    }
+    return playerGameStats;
   }
 
   /**
@@ -534,13 +554,13 @@ public class FootballService {
     if (awayStarterCount != 11) {
       throw new FootballException("Away starter count is not correct");
     }
-    // 出場時間が合計990分か確認
+    // 出場時間が合計990分以上になっているか確認
     int homeMinutes = homeClubStats.stream().mapToInt(PlayerGameStat::getMinutes).sum();
     int awayMinutes = awayClubStats.stream().mapToInt(PlayerGameStat::getMinutes).sum();
-    if (homeMinutes != 990) {
+    if (homeMinutes < 990) {
       throw new FootballException("Home minutes is not correct");
     }
-    if (awayMinutes != 990) {
+    if (awayMinutes < 990) {
       throw new FootballException("Away minutes is not correct");
     }
   }
