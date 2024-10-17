@@ -33,7 +33,6 @@ function PlayerPage() {
         if (selectedSeason) { // selectedSeasonが設定されている場合のみ実行
             getPlayerSeasonStats(playerId, selectedSeason.id, setPlayerSeasonStats);
         }
-        console.log(playerSeasonStats);
     }, [playerId, selectedSeason]);
 
     useEffect(() => {
@@ -50,7 +49,8 @@ function PlayerPage() {
 
 
     const handleSeasonChange = (e) => {
-        const selectedSeasonId = e.target.value;
+        console.log("handleSeasonChange");
+        const selectedSeasonId = Number(e.target.value);
         const season = seasons.find((season) => season.id === selectedSeasonId); // idに基づいてシーズンを検索
         setSelectedSeason(season); // 選択したシーズンオブジェクトをセット
     };
@@ -59,7 +59,7 @@ function PlayerPage() {
     return (
         <div>
             {/* Homeに戻るリンク */}
-            <Link to="/"></Link>
+            <Link to="/">Home</Link>
             <br />
             {/* クラブページに戻るリンク */}
             <Link to={`/countries/${countryId}/leagues/${leagueId}/clubs/${clubId}/players`}>Back to Players</Link>
@@ -96,15 +96,17 @@ function PlayerPage() {
                                 <th>Red Cards</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>{playerSeasonStats.games}</td>
-                                <td>{playerSeasonStats.goals}</td>
-                                <td>{playerSeasonStats.assists}</td>
-                                <td>{playerSeasonStats.yellowCards}</td>
-                                <td>{playerSeasonStats.redCards}</td>
-                            </tr>
-                        </tbody>
+                        {playerSeasonStats.map((seasonStat) => (
+                            <tbody key={seasonStat.seasonId}>
+                                <tr>
+                                    <td>{seasonStat.games}</td>
+                                    <td>{seasonStat.goals}</td>
+                                    <td>{seasonStat.assists}</td>
+                                    <td>{seasonStat.yellowCards}</td>
+                                    <td>{seasonStat.redCards}</td>
+                                </tr>
+                            </tbody>
+                        ))}
                     </table>
                     
                     {/* 試合ごとの成績 */}
@@ -112,8 +114,8 @@ function PlayerPage() {
                     <table>
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Opponent</th>
+                                {/* <th>Date</th>
+                                <th>Opponent</th> */}
                                 <th>Goals</th>
                                 <th>Assists</th>
                                 <th>Yellow Cards</th>
@@ -121,26 +123,22 @@ function PlayerPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {playerSeasonStats.playerGameStats.map((gameStat) => {
-                                setGameId(gameStat.gameId);
-
-                                const date =gameResult.gameDate;
-                                const homeClubId = gameResult.homeClubId;
-                                const awayClubId = gameResult.awayClubId;
-
-                                setOpponentClubId(gameStat.clubId === homeClubId ? awayClubId : homeClubId);
-
-                                return (
+                            {playerSeasonStats.map((seasonStat) => (
+                                seasonStat.playerGameStats.map((gameStat) => (
                                     <tr key={gameStat.gameId}>
-                                        <td>{date}</td>
-                                        <td>{opponentClub.name}</td>
+                                        {/* <td>{gameStat.date}</td>
+                                        <td>
+                                            <Link to={`/countries/${countryId}/leagues/${leagueId}/clubs/${opponentClubId}/players`}>
+                                                {opponentClub?.name}
+                                            </Link>
+                                        </td> */}
                                         <td>{gameStat.goals}</td>
                                         <td>{gameStat.assists}</td>
                                         <td>{gameStat.yellowCards}</td>
                                         <td>{gameStat.redCards}</td>
                                     </tr>
-                                );
-                            })}                               
+                                ))
+                            ))}                            
                         </tbody>
                     </table>
 

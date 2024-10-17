@@ -33,7 +33,7 @@ const { showToast } = useToast();
   }, [leagueId, selectedSeason]);
 
   const handleSeasonChange = (e) => {
-    const selectedSeasonId = e.target.value;
+    const selectedSeasonId = Number(e.target.value);
     const season = seasons.find((season) => season.id === selectedSeasonId); // idに基づいてシーズンを検索
     setSelectedSeason(season); // 選択したシーズンオブジェクトをセット
   };

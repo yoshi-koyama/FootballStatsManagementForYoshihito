@@ -210,7 +210,7 @@ export const getCurrentSeason = async (setCurrentSeason) => {
   
   export const getPlayerSeasonStats = async (playerId, seasonId , setPlayerSeasonStats) => {
     try {
-        const response = await fetch(`/players/${playerId}/player-season-stat/${seasonId}`);
+        const response = await fetch(`/players/${playerId}/player-season-stats/${seasonId}`);
         if (!response.ok) {
             const text = await response.text();
             throw new Error(text);
