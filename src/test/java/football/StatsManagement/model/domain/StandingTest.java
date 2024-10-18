@@ -12,6 +12,8 @@ import football.StatsManagement.model.data.League;
 import football.StatsManagement.model.data.Season;
 import football.StatsManagement.service.FootballService;
 import football.StatsManagement.utils.RankingUtils;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +28,13 @@ import org.slf4j.LoggerFactory;
 
 @ExtendWith(MockitoExtension.class)
 class StandingTest {
-  private static final Logger logger = LoggerFactory.getLogger(StandingTest.class);
 
   @Mock
   private FootballService service;
 
   @Test
   @DisplayName("順位表の初期化メソッドのテスト")
-  void initialStanding() throws ResourceNotFoundException {
+  void initialStanding() throws ResourceNotFoundException, IOException {
     // Arrange
     int leagueId = 1;
     int seasonId = 100001;
@@ -65,12 +66,15 @@ class StandingTest {
       mockedRankingUtils.when(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings)).thenReturn(rankedClubForStandings);
 
       // Act
-      Standing actual = Standing.initialStanding(leagueId, seasonId, service);
+      Standing actual = null;
+      try {
+        actual = Standing.initialStanding(leagueId, seasonId, service);
+      } catch (Exception e) {
+        FileWriter writer = new FileWriter("build/custom-logs/debug.log", true);
+        writer.write(e.getMessage());
+      }
+//      Standing actual = Standing.initialStanding(leagueId, seasonId, service);
       Standing expected = new Standing(leagueId, seasonId, rankedClubForStandings, "league1", "1000-01");
-
-      // Log output
-      logger.info("Expected: {}", expected);
-      logger.info("Actual: {}", actual);
 
       // Assert
       assertEquals(expected, actual);
