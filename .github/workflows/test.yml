@@ -40,10 +40,4 @@ jobs:
         name: test-report  # アーティファクトの名前
         path: build/reports/tests/test/  # アップロードするファイルやディレクトリ
 
-    - name: Upload custom logs
-      if: always()  # 成功・失敗に関わらず実行
-      uses: actions/upload-artifact@v3
-      with:
-        name: custom-logs
-        path: build/reports/tests/custom-logs/
-    
+

@@ -36,7 +36,7 @@ class StandingTest {
   @Test
   @DisplayName("順位表の初期化メソッドのテスト")
   void initialStanding() throws ResourceNotFoundException, IOException {
-    FileWriter writer = new FileWriter("build/reports/tests/custom-logs/error.log");
+    FileWriter writer = new FileWriter("build/reports/tests/test/error.log");
 
     // Arrange
     int leagueId = 1;
