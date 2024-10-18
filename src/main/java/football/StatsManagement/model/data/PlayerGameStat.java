@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor // @Select用
+@AllArgsConstructor // テスト用に追加
 public class PlayerGameStat {
   private final int id;
   // この時点でのクラブと背番号は確定させる

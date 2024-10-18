@@ -11,8 +11,17 @@ public class RankingUtils {
       return sortedClubForStandingsInPrimeraDivision(clubForStandings);
     } else if (leagueId == LeagueIds.ENGLISH_PREMIER_LEAGUE_ID) {
       return sortedClubForStandingsInEnglishPremierLeague(clubForStandings);
+    } else {
+
     }
     return clubForStandings;
+  }
+
+  // 勝ち点のみ考慮した順位付け
+  public static List<ClubForStanding> sortedClubForStandingInCommon(List<ClubForStanding> clubForStandings) {
+    return clubForStandings.stream()
+        .sorted((c1, c2) -> c2.getPoints() - c1.getPoints())
+        .collect(Collectors.toList());
   }
 
   public static List<ClubForStanding> sortedClubForStandingsInPrimeraDivision(List<ClubForStanding> clubForStandings) {
