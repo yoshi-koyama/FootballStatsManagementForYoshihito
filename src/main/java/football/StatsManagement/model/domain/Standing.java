@@ -6,6 +6,7 @@ import football.StatsManagement.model.data.Club;
 import football.StatsManagement.utils.RankingUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public record Standing(
     int leagueId,
@@ -17,14 +18,14 @@ public record Standing(
   public static Standing initialStanding(int leagueId, int seasonId, FootballService service) throws ResourceNotFoundException {
     List<Club> clubs = service.getClubsByLeague(leagueId);
     // リーグによって異なる順位決定方法
-    List<ClubForStanding> clubForStandings = rankedClubsForStanding(clubs, seasonId, leagueId, service);
+    List<ClubForStanding> rankedClubForStandings = rankedClubsForStanding(clubs, seasonId, leagueId, service);
     // 順位を設定
-    for (int i = 0; i < clubForStandings.size(); i++) {
-      clubForStandings.get(i).setPosition(i + 1);
+    for (int i = 0; i < rankedClubForStandings.size(); i++) {
+      rankedClubForStandings.get(i).setPosition(i + 1);
     }
     String leagueName = service.getLeague(leagueId).getName();
     String seasonName = service.getSeason(seasonId).getName();
-    return new Standing(leagueId, seasonId, clubForStandings, leagueName, seasonName);
+    return new Standing(leagueId, seasonId, rankedClubForStandings, leagueName, seasonName);
   }
 
   private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) {
@@ -32,13 +33,27 @@ public record Standing(
         .map(club -> ClubForStanding.initialClubForStanding(seasonId, club, service))
         .toList();
 
-    List<ClubForStanding> sortedClubForStandings = new ArrayList<>();
-    // プリメーラ・ディビシオン
-    if (leagueId == 7) {
-      sortedClubForStandings = RankingUtils.sortedClubForStandingsInPrimeraDivision(clubForStandings);
-    }
+    return RankingUtils.sortedClubForStandings(leagueId, clubForStandings);
+  }
 
-    return sortedClubForStandings;
+  // テスト用にequalsとhashCodeをオーバーライド
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Standing that = (Standing) o;
+
+    return leagueId == that.leagueId &&
+        seasonId == that.seasonId &&
+        leagueName.equals(that.leagueName) &&
+        seasonName.equals(that.seasonName) &&
+        clubForStandings.equals(that.clubForStandings);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(leagueId, seasonId, clubForStandings, leagueName, seasonName);
   }
 }
 
