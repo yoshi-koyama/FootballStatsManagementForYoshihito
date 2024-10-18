@@ -33,4 +33,11 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew build
 
+    - name: Upload Test Report
+      if: failure()  # テストが失敗した場合のみ実行
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-report  # アーティファクトの名前
+        path: build/reports/tests/test/  # アップロードするファイルやディレクトリ
+
     
