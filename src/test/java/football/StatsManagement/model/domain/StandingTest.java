@@ -62,7 +62,15 @@ class StandingTest {
       mockedRankingUtils.when(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings)).thenReturn(rankedClubForStandings);
 
       // Act
-      Standing actual = Standing.initialStanding(leagueId, seasonId, service);
+//      Standing actual = Standing.initialStanding(leagueId, seasonId, service);
+      Standing actual;
+      try {
+        actual = Standing.initialStanding(leagueId, seasonId, service);
+      } catch (Exception e) {
+        System.err.println("Exception in initialStanding: " + e.getMessage());
+        e.printStackTrace();
+        throw e; // テストを確実に失敗させるために再スロー
+      }
       Standing expected = new Standing(leagueId, seasonId, rankedClubForStandings, "league1", "1000-01");
 
       // Assert
