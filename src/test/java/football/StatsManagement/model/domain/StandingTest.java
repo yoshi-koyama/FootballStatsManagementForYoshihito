@@ -66,6 +66,8 @@ class StandingTest {
       Standing expected = new Standing(leagueId, seasonId, rankedClubForStandings, "league1", "1000-01");
 
       // Assert
+      System.out.println(actual);
+      System.out.println(expected);
       assertEquals(expected, actual);
       verify(service, times(1)).getClubsByLeague(leagueId);
       verify(service, times(1)).getLeague(leagueId);
