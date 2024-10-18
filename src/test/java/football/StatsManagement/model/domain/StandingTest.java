@@ -139,9 +139,6 @@ class StandingTest {
         try {
           actual = Standing.initialStanding(leagueId, seasonId, service);
           writer.write("Act: 順位表を初期化しました\n");
-          writer.write("actual: " + actual + "\n");
-          writer.write("leagueId: " + leagueId + "\n");
-          writer.write("seasonId: " + seasonId + "\n");
         } catch (Exception e) {
           writer.write("Act: エラー発生: " + e.getMessage() + "\n");
         }

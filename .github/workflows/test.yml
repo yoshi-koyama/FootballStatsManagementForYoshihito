@@ -38,6 +38,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-report  # アーティファクトの名前
-        path: build/reports/tests/test/error.log  # アップロードするファイルやディレクトリ
+        path: build/reports/tests/test/  # アップロードするファイルやディレクトリ
 
 
