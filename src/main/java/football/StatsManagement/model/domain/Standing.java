@@ -40,7 +40,9 @@ public record Standing(
 //  }
 
   public static Standing initialStanding(int leagueId, int seasonId, FootballService service) throws ResourceNotFoundException, IOException {
-    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_initialStanding.log")) {
+    FileWriter writer = null; // FileWriterを初期化
+    try {
+      writer = new FileWriter("build/reports/tests/test/error_initialStanding.log");
       writer.write("初期化処理を開始します\n");
 
       List<Club> clubs = service.getClubsByLeague(leagueId);
@@ -64,28 +66,41 @@ public record Standing(
 
       return new Standing(leagueId, seasonId, rankedClubForStandings, leagueName, seasonName);
     } catch (Exception e) {
-      // 例外の詳細を標準出力に表示
-      e.printStackTrace();
+      if (writer != null) {
+        try {
+          writer.write("エラーが発生しました: " + e.getMessage() + "\n");
+        } catch (IOException ioException) {
+          // 書き込みエラーは無視します
+        }
+      }
+      e.printStackTrace(); // エラーを標準出力にも表示
       throw e; // エラーを再スローして呼び出し元で処理できるようにします
+    } finally {
+      if (writer != null) {
+        writer.close(); // 最後にファイルを閉じます
+      }
     }
   }
 
   private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) throws IOException {
-    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_rankedClubsForStanding.log")) {
+    FileWriter writer = null; // FileWriterを初期化
+    try {
+      writer = new FileWriter("build/reports/tests/test/error_rankedClubsForStanding.log");
       writer.write("順位付けのためのクラブリストを生成中...\n");
 
+      FileWriter finalWriter = writer;
       List<ClubForStanding> clubForStandings = clubs.stream()
           .map(club -> {
             try {
               ClubForStanding clubForStanding = ClubForStanding.initialClubForStanding(seasonId, club, service);
-              writer.write("クラブ: " + club.getName() + " の初期順位データを生成しました\n");
+              finalWriter.write("クラブ: " + club.getName() + " の初期順位データを生成しました\n");
               return clubForStanding;
             } catch (Exception e) {
               // 例外が発生した場合、エラーメッセージをログに書き込み、nullを返す
               try {
-                writer.write("クラブ: " + club.getName() + " の初期順位データ生成中にエラーが発生しました: " + e.getMessage() + "\n");
+                finalWriter.write("クラブ: " + club.getName() + " の初期順位データ生成中にエラーが発生しました: " + e.getMessage() + "\n");
               } catch (IOException ioException) {
-                ioException.printStackTrace(); // 書き込みエラーは標準出力に表示
+                // 書き込みエラーは無視します
               }
               return null; // ここで null を返すと、後でフィルタリングが必要
             }
@@ -96,10 +111,22 @@ public record Standing(
       writer.write("クラブの順位データ生成が完了しました\n");
       return RankingUtils.sortedClubForStandings(leagueId, clubForStandings);
     } catch (Exception e) {
-      e.printStackTrace(); // 例外の詳細を標準出力に表示
+      if (writer != null) {
+        try {
+          writer.write("エラーが発生しました: " + e.getMessage() + "\n");
+        } catch (IOException ioException) {
+          // 書き込みエラーは無視します
+        }
+      }
+      e.printStackTrace(); // エラーを標準出力にも表示
       throw e; // エラーを再スロー
+    } finally {
+      if (writer != null) {
+        writer.close(); // 最後にファイルを閉じます
+      }
     }
   }
+
 
 
   // テスト用にequalsとhashCodeをオーバーライド
