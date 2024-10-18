@@ -40,80 +40,65 @@ public record Standing(
 //  }
 
   public static Standing initialStanding(int leagueId, int seasonId, FootballService service) throws ResourceNotFoundException, IOException {
+    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_initialStanding.log")) {
+      writer.write("初期化処理を開始します\n");
 
+      List<Club> clubs = service.getClubsByLeague(leagueId);
+      writer.write("リーグID: " + leagueId + " のクラブ一覧を取得しました: " + clubs.toString() + "\n");
 
-    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_initialStanding.log"); ) {
-      try {
-        writer.write("初期化処理を開始します\n");
+      // リーグによって異なる順位決定方法
+      List<ClubForStanding> rankedClubForStandings = rankedClubsForStanding(clubs, seasonId, leagueId, service);
+      writer.write("順位付けされたクラブのリスト: " + rankedClubForStandings.toString() + "\n");
 
-        List<Club> clubs = service.getClubsByLeague(leagueId);
-        writer.write("リーグID: " + leagueId + " のクラブ一覧を取得しました: " + clubs.toString() + "\n");
-
-        // リーグによって異なる順位決定方法
-        List<ClubForStanding> rankedClubForStandings = rankedClubsForStanding(clubs, seasonId, leagueId, service);
-        writer.write("順位付けされたクラブのリスト: " + rankedClubForStandings.toString() + "\n");
-
-        // 順位を設定
-        for (int i = 0; i < rankedClubForStandings.size(); i++) {
-          rankedClubForStandings.get(i).setPosition(i + 1);
-          writer.write("クラブ: " + rankedClubForStandings.get(i).getClub().getName() + " の順位を " + (i + 1) + " に設定しました\n");
-        }
-
-        String leagueName = service.getLeague(leagueId).getName();
-        writer.write("リーグ名: " + leagueName + "\n");
-
-        String seasonName = service.getSeason(seasonId).getName();
-        writer.write("シーズン名: " + seasonName + "\n");
-
-        return new Standing(leagueId, seasonId, rankedClubForStandings, leagueName, seasonName);
-      } catch (Exception e) {
-        writer.write("エラーが発生しました: " + e.getMessage() + "\n");
-        throw e; // エラーを再スローして呼び出し元で処理できるようにします
-      } finally {
-        writer.close(); // 最後にファイルを閉じます
+      // 順位を設定
+      for (int i = 0; i < rankedClubForStandings.size(); i++) {
+        rankedClubForStandings.get(i).setPosition(i + 1);
+        writer.write("クラブ: " + rankedClubForStandings.get(i).getClub().getName() + " の順位を " + (i + 1) + " に設定しました\n");
       }
+
+      String leagueName = service.getLeague(leagueId).getName();
+      writer.write("リーグ名: " + leagueName + "\n");
+
+      String seasonName = service.getSeason(seasonId).getName();
+      writer.write("シーズン名: " + seasonName + "\n");
+
+      return new Standing(leagueId, seasonId, rankedClubForStandings, leagueName, seasonName);
+    } catch (Exception e) {
+      // 例外の詳細を標準出力に表示
+      e.printStackTrace();
+      throw e; // エラーを再スローして呼び出し元で処理できるようにします
     }
-
-
   }
 
   private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) throws IOException {
+    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_rankedClubsForStanding.log")) {
+      writer.write("順位付けのためのクラブリストを生成中...\n");
 
-    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_rankedClubsForStanding.log");) {
-      try {
-        writer.write("順位付けのためのクラブリストを生成中...\n");
-
-        List<ClubForStanding> clubForStandings = clubs.stream()
-            .map(club -> {
+      List<ClubForStanding> clubForStandings = clubs.stream()
+          .map(club -> {
+            try {
+              ClubForStanding clubForStanding = ClubForStanding.initialClubForStanding(seasonId, club, service);
+              writer.write("クラブ: " + club.getName() + " の初期順位データを生成しました\n");
+              return clubForStanding;
+            } catch (Exception e) {
+              // 例外が発生した場合、エラーメッセージをログに書き込み、nullを返す
               try {
-                ClubForStanding clubForStanding = ClubForStanding.initialClubForStanding(seasonId, club, service);
-                writer.write("クラブ: " + club.getName() + " の初期順位データを生成しました\n");
-                return clubForStanding;
-              } catch (Exception e) {
-                // 例外が発生した場合、エラーメッセージをログに書き込み、nullを返す
-                try {
-                  writer.write("クラブ: " + club.getName() + " の初期順位データ生成中にエラーが発生しました: " + e.getMessage() + "\n");
-                } catch (IOException ioException) {
-                  ioException.printStackTrace(); // 書き込みエラーは標準出力に表示
-                }
-                return null; // ここで null を返すと、後でフィルタリングが必要
+                writer.write("クラブ: " + club.getName() + " の初期順位データ生成中にエラーが発生しました: " + e.getMessage() + "\n");
+              } catch (IOException ioException) {
+                ioException.printStackTrace(); // 書き込みエラーは標準出力に表示
               }
-            })
-            .filter(Objects::nonNull) // null を除外
-            .toList();
+              return null; // ここで null を返すと、後でフィルタリングが必要
+            }
+          })
+          .filter(Objects::nonNull) // null を除外
+          .toList();
 
-        writer.write("クラブの順位データ生成が完了しました\n");
-
-        return RankingUtils.sortedClubForStandings(leagueId, clubForStandings);
-      } catch (Exception e) {
-        writer.write("エラーが発生しました: " + e.getMessage() + "\n");
-        throw e; // エラーを再スロー
-      } finally {
-        writer.close(); // 最後にファイルを閉じます
-      }
+      writer.write("クラブの順位データ生成が完了しました\n");
+      return RankingUtils.sortedClubForStandings(leagueId, clubForStandings);
+    } catch (Exception e) {
+      e.printStackTrace(); // 例外の詳細を標準出力に表示
+      throw e; // エラーを再スロー
     }
-
-
   }
 
 
