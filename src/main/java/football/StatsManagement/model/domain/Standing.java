@@ -40,9 +40,7 @@ public record Standing(
 //  }
 
   public static Standing initialStanding(int leagueId, int seasonId, FootballService service) throws ResourceNotFoundException, IOException {
-    FileWriter writer = null; // FileWriterを初期化
-    try {
-      writer = new FileWriter("build/reports/tests/test/error_initialStanding.log");
+    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_initialStanding.log")) {
       writer.write("初期化処理を開始します\n");
 
       List<Club> clubs = service.getClubsByLeague(leagueId);
@@ -66,64 +64,53 @@ public record Standing(
 
       return new Standing(leagueId, seasonId, rankedClubForStandings, leagueName, seasonName);
     } catch (Exception e) {
-      if (writer != null) {
-        try {
-          writer.write("エラーが発生しました: " + e.getMessage() + "\n");
-        } catch (IOException ioException) {
-          // 書き込みエラーは無視します
+      // 例外の詳細をログに書き込み
+      try (FileWriter errorWriter = new FileWriter("build/reports/tests/test/error_initialStanding.log", true)) {
+        errorWriter.write("エラーが発生しました: " + e.getMessage() + "\n");
+        for (StackTraceElement element : e.getStackTrace()) {
+          errorWriter.write("\t" + element.toString() + "\n");
         }
+      } catch (IOException ioException) {
+        ioException.printStackTrace(); // エラー時の処理
       }
-      e.printStackTrace(); // エラーを標準出力にも表示
-      throw e; // エラーを再スローして呼び出し元で処理できるようにします
-    } finally {
-      if (writer != null) {
-        writer.close(); // 最後にファイルを閉じます
-      }
+      throw e; // エラーを再スロー
     }
   }
 
   private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) throws IOException {
-    FileWriter writer = null; // FileWriterを初期化
-    try {
-      writer = new FileWriter("build/reports/tests/test/error_rankedClubsForStanding.log");
+    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_rankedClubsForStanding.log")) {
       writer.write("順位付けのためのクラブリストを生成中...\n");
 
-      FileWriter finalWriter = writer;
       List<ClubForStanding> clubForStandings = clubs.stream()
           .map(club -> {
             try {
               ClubForStanding clubForStanding = ClubForStanding.initialClubForStanding(seasonId, club, service);
-              finalWriter.write("クラブ: " + club.getName() + " の初期順位データを生成しました\n");
+              writer.write("クラブ: " + club.getName() + " の初期順位データを生成しました\n");
               return clubForStanding;
             } catch (Exception e) {
-              // 例外が発生した場合、エラーメッセージをログに書き込み、nullを返す
               try {
-                finalWriter.write("クラブ: " + club.getName() + " の初期順位データ生成中にエラーが発生しました: " + e.getMessage() + "\n");
+                writer.write("クラブ: " + club.getName() + " の初期順位データ生成中にエラーが発生しました: " + e.getMessage() + "\n");
               } catch (IOException ioException) {
-                // 書き込みエラーは無視します
+                // 書き込みエラーはログに表示
               }
-              return null; // ここで null を返すと、後でフィルタリングが必要
+              return null; // nullを返すと、後でフィルタリングが必要
             }
           })
-          .filter(Objects::nonNull) // null を除外
+          .filter(Objects::nonNull) // nullを除外
           .toList();
 
       writer.write("クラブの順位データ生成が完了しました\n");
       return RankingUtils.sortedClubForStandings(leagueId, clubForStandings);
     } catch (Exception e) {
-      if (writer != null) {
-        try {
-          writer.write("エラーが発生しました: " + e.getMessage() + "\n");
-        } catch (IOException ioException) {
-          // 書き込みエラーは無視します
+      try (FileWriter errorWriter = new FileWriter("build/reports/tests/test/error_rankedClubsForStanding.log", true)) {
+        errorWriter.write("エラーが発生しました: " + e.getMessage() + "\n");
+        for (StackTraceElement element : e.getStackTrace()) {
+          errorWriter.write("\t" + element.toString() + "\n");
         }
+      } catch (IOException ioException) {
+        // エラー時の処理
       }
-      e.printStackTrace(); // エラーを標準出力にも表示
       throw e; // エラーを再スロー
-    } finally {
-      if (writer != null) {
-        writer.close(); // 最後にファイルを閉じます
-      }
     }
   }
 
