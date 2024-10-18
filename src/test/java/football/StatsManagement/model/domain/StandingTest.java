@@ -21,9 +21,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ExtendWith(MockitoExtension.class)
 class StandingTest {
+  private static final Logger logger = LoggerFactory.getLogger(StandingTest.class);
 
   @Mock
   private FootballService service;
@@ -62,20 +65,14 @@ class StandingTest {
       mockedRankingUtils.when(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings)).thenReturn(rankedClubForStandings);
 
       // Act
-//      Standing actual = Standing.initialStanding(leagueId, seasonId, service);
-      Standing actual;
-      try {
-        actual = Standing.initialStanding(leagueId, seasonId, service);
-      } catch (Exception e) {
-        System.err.println("Exception in initialStanding: " + e.getMessage());
-        e.printStackTrace();
-        throw e; // テストを確実に失敗させるために再スロー
-      }
+      Standing actual = Standing.initialStanding(leagueId, seasonId, service);
       Standing expected = new Standing(leagueId, seasonId, rankedClubForStandings, "league1", "1000-01");
 
+      // Log output
+      logger.info("Expected: {}", expected);
+      logger.info("Actual: {}", actual);
+
       // Assert
-      System.out.println("actual: " + actual);
-      System.out.println("expected: " + expected);
       assertEquals(expected, actual);
       verify(service, times(1)).getClubsByLeague(leagueId);
       verify(service, times(1)).getLeague(leagueId);
