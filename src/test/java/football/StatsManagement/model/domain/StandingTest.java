@@ -40,7 +40,7 @@ class StandingTest {
     List<Club> clubs = List.of(club1, club2, club3);
     when(service.getClubsByLeague(leagueId)).thenReturn(clubs);
     when(service.getLeague(leagueId)).thenReturn(new League(leagueId, 1, "league1"));
-    when(service.getSeason(seasonId)).thenReturn(new Season(seasonId, "1000-01", LocalDate.now(), LocalDate.now(), false));
+    when(service.getSeason(seasonId)).thenReturn(new Season(seasonId, "1000-01", LocalDate.of(1000, 7, 1), LocalDate.of(1000, 6, 30), false));
 
     // staticメソッドの返り値を用意
     List<ClubForStanding> clubForStandings = List.of(
@@ -72,6 +72,8 @@ class StandingTest {
       verify(service, times(1)).getSeason(seasonId);
       mockedClubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club1, service));
       mockedClubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club2, service));
+      mockedClubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club3, service));
+      mockedRankingUtils.verify(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings));
     }
   }
 }
