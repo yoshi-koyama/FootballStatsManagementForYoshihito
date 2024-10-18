@@ -40,7 +40,7 @@ public record Standing(
 //  }
 
   public static Standing initialStanding(int leagueId, int seasonId, FootballService service) throws ResourceNotFoundException, IOException {
-    FileWriter writer = new FileWriter("build/reports/tests/test/error.log");
+    FileWriter writer = new FileWriter("build/reports/tests/test/error_initialStanding.log"); // 追記モード
 
     try {
       writer.write("初期化処理を開始します\n");
@@ -74,7 +74,7 @@ public record Standing(
   }
 
   private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) throws IOException {
-    FileWriter writer = new FileWriter("build/reports/tests/test/error.log", true); // 追記モード
+    FileWriter writer = new FileWriter("build/reports/tests/test/error_rankedClubsForStanding.log"); // 追記モード
     try {
       writer.write("順位付けのためのクラブリストを生成中...\n");
 

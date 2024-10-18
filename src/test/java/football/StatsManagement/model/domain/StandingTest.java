@@ -88,7 +88,7 @@ class StandingTest {
   @DisplayName("順位表の初期化メソッドのテスト")
   void initialStanding() throws ResourceNotFoundException, IOException {
     // ログファイルの設定
-    try (FileWriter writer = new FileWriter("build/reports/tests/test/error.log")) {
+    try (FileWriter writer = new FileWriter("build/reports/tests/test/error_standing-test.log")) {
       // テスト開始のログ
       writer.write("テスト開始: 順位表の初期化メソッドのテスト\n");
 
