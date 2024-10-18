@@ -7,9 +7,9 @@ import java.util.stream.Collectors;
 public class RankingUtils {
 
   public static List<ClubForStanding> sortedClubForStandings(int leagueId, List<ClubForStanding> clubForStandings) {
-    if (leagueId == 7) {
+    if (leagueId == LeagueIds.PRIMERA_DIVISION_ID) {
       return sortedClubForStandingsInPrimeraDivision(clubForStandings);
-    } else if (leagueId == 8) {
+    } else if (leagueId == LeagueIds.ENGLISH_PREMIER_LEAGUE_ID) {
       return sortedClubForStandingsInEnglishPremierLeague(clubForStandings);
     }
     return clubForStandings;
