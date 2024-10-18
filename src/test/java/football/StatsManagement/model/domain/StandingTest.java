@@ -29,12 +29,15 @@ import org.slf4j.LoggerFactory;
 @ExtendWith(MockitoExtension.class)
 class StandingTest {
 
+
   @Mock
   private FootballService service;
 
   @Test
   @DisplayName("順位表の初期化メソッドのテスト")
   void initialStanding() throws ResourceNotFoundException, IOException {
+    FileWriter writer = new FileWriter("build/reports/tests/custom-logs/error.log");
+
     // Arrange
     int leagueId = 1;
     int seasonId = 100001;
@@ -70,8 +73,8 @@ class StandingTest {
       try {
         actual = Standing.initialStanding(leagueId, seasonId, service);
       } catch (Exception e) {
-        FileWriter writer = new FileWriter("build/custom-logs/debug.log", true);
         writer.write(e.getMessage());
+        writer.close();
       }
 //      Standing actual = Standing.initialStanding(leagueId, seasonId, service);
       Standing expected = new Standing(leagueId, seasonId, rankedClubForStandings, "league1", "1000-01");

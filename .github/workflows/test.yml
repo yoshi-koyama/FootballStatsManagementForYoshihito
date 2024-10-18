@@ -45,5 +45,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: custom-logs
-        path: build/custom-logs/
+        path: build/reports/tests/custom-logs/
     
