@@ -32,6 +32,8 @@ class StandingTest {
   @DisplayName("順位表の初期化メソッドのテスト")
   void initialStanding() throws ResourceNotFoundException {
 
+    System.out.println("Test:順位表の初期化メソッドのテスト開始");
+
     // Arrange
     int leagueId = 1;
     int seasonId = 100001;
@@ -39,14 +41,6 @@ class StandingTest {
     Club club2 = new Club(2, 1, "club2");
     Club club3 = new Club(3, 1, "club3");
     List<Club> clubs = List.of(club1, club2, club3);
-    when(service.getClubsByLeague(leagueId)).thenReturn(clubs);
-    when(service.getLeague(leagueId)).thenReturn(new League(leagueId, 1, "league1"));
-    when(service.getSeason(seasonId)).thenReturn(new Season(seasonId, "1000-01", LocalDate.of(1000, 7, 1), LocalDate.of(1000, 6, 30), false));
-
-    MockedStatic<ClubForStanding> clubForStanding = mockStatic(ClubForStanding.class);
-    MockedStatic<RankingUtils> rankingUtils = mockStatic(RankingUtils.class);
-
-    // staticメソッドの返り値を用意
     List<ClubForStanding> clubForStandings = List.of(
         new ClubForStanding(new ArrayList<>(), club1, 2, 2, 0, 0, 6, 3, 0, 3),
         new ClubForStanding(new ArrayList<>(), club2, 2, 1, 0, 1, 3, 2, 1, 1),
@@ -58,28 +52,32 @@ class StandingTest {
         new ClubForStanding(new ArrayList<>(), club3, 2, 0, 0, 2, 0, 1, 5, -4)
     );
 
-    clubForStanding.when(() -> ClubForStanding.initialClubForStanding(seasonId, club1, service)).thenReturn(clubForStandings.get(0));
-    clubForStanding.when(() -> ClubForStanding.initialClubForStanding(seasonId, club2, service)).thenReturn(clubForStandings.get(1));
-    clubForStanding.when(() -> ClubForStanding.initialClubForStanding(seasonId, club3, service)).thenReturn(clubForStandings.get(2));
-    rankingUtils.when(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings)).thenReturn(rankedClubForStandings);
+    when(service.getClubsByLeague(leagueId)).thenReturn(clubs);
+    when(service.getLeague(leagueId)).thenReturn(new League(leagueId, 1, "league1"));
+    when(service.getSeason(seasonId)).thenReturn(new Season(seasonId, "1000-01", LocalDate.of(1000, 7, 1), LocalDate.of(1000, 6, 30), false));
 
-    // Act
-    Standing actual = Standing.initialStanding(leagueId, seasonId, service);
-    Standing expected = new Standing(leagueId, seasonId, rankedClubForStandings, "league1", "1000-01");
+    try (MockedStatic<ClubForStanding> clubForStanding = mockStatic(ClubForStanding.class);
+        MockedStatic<RankingUtils> rankingUtils = mockStatic(RankingUtils.class)) {
+      clubForStanding.when(() -> ClubForStanding.initialClubForStanding(seasonId, club1, service)).thenReturn(clubForStandings.get(0));
+      clubForStanding.when(() -> ClubForStanding.initialClubForStanding(seasonId, club2, service)).thenReturn(clubForStandings.get(1));
+      clubForStanding.when(() -> ClubForStanding.initialClubForStanding(seasonId, club3, service)).thenReturn(clubForStandings.get(2));
+      rankingUtils.when(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings)).thenReturn(rankedClubForStandings);
 
-    // Assert
-    System.out.println(actual);
-    System.out.println(expected);
-    assertEquals(expected, actual);
-    verify(service, times(1)).getClubsByLeague(leagueId);
-    verify(service, times(1)).getLeague(leagueId);
-    verify(service, times(1)).getSeason(seasonId);
-    clubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club1, service));
-    clubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club2, service));
-    clubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club3, service));
-    rankingUtils.verify(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings));
+      // Act
+      Standing actual = Standing.initialStanding(leagueId, seasonId, service);
+      System.out.println("Actual: " + actual);
+      Standing expected = new Standing(leagueId, seasonId, rankedClubForStandings, "league1", "1000-01");
+      System.out.println("Expected: " + expected);
 
-    clubForStanding.close();
-    rankingUtils.close();
+      // Assert
+      assertEquals(expected, actual);
+      verify(service, times(1)).getClubsByLeague(leagueId);
+      verify(service, times(1)).getLeague(leagueId);
+      verify(service, times(1)).getSeason(seasonId);
+      clubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club1, service));
+      clubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club2, service));
+      clubForStanding.verify(() -> ClubForStanding.initialClubForStanding(seasonId, club3, service));
+      rankingUtils.verify(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings));
+    }
   }
 }
