@@ -31,6 +31,7 @@ class StandingTest {
   @Test
   @DisplayName("順位表の初期化メソッドのテスト")
   void initialStanding() throws ResourceNotFoundException {
+
     // ローカルでテスト成功するが、CIで失敗するので無効化
 
 //    // Arrange
