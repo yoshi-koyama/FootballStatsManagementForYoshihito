@@ -108,7 +108,7 @@ public class FootballService {
     if (!season.getName().matches("\\d{4}-\\d{2}")) {
       throw new FootballException("Season name should be in the format of 'yyyy-yy'");
     }
-    // シーズン名が数字が適切であるか確認
+    // シーズン名の数字が適切であるか確認
     confirmSeasonNameNumber(season.getName());
     // 既存のシーズンと重複しないか確認
     List<Season> seasons = getSeasons();
