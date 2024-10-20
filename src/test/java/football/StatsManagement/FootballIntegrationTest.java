@@ -1,9 +1,12 @@
 package football.StatsManagement;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.model.data.Country;
 import football.StatsManagement.model.data.GameResult;
@@ -17,6 +20,7 @@ import football.StatsManagement.model.domain.Standing;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,13 +29,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 // RepositoryTestで用いたH2データベースを利用する
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+// メソッドごとにDBの状態を元に戻す
+@Transactional
 class FootballIntegrationTest {
 
   @Autowired
@@ -40,6 +48,8 @@ class FootballIntegrationTest {
   @Autowired
   private ObjectMapper objectMapper;
 
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
 
   @Test
   @DisplayName("現在シーズンが取得できること")
@@ -259,8 +269,7 @@ class FootballIntegrationTest {
     clubForStanding1.setPosition(1);
     clubForStanding2.setPosition(2);
 
-    Standing expected = new Standing(leagueId, seasonId, List.of(clubForStanding1, clubForStanding2), "LeagueAA", "2019-20");
-    return expected;
+    return new Standing(leagueId, seasonId, List.of(clubForStanding1, clubForStanding2), "LeagueAA", "2019-20");
   }
 
   @ParameterizedTest
@@ -337,11 +346,10 @@ class FootballIntegrationTest {
     List<PlayerGameStat> playerGameStats1 = List.of(playerGameStat11, playerGameStat12);
     List<PlayerGameStat> playerGameStats2 = List.of(playerGameStat21, playerGameStat22);
 
-    List<PlayerSeasonStat> expected = List.of(
+    return List.of(
         new PlayerSeasonStat(1, playerGameStats1, seasonId, clubId, 2, 2, 0, 1, 0, 180, 0, 0, "PlayerAAAA", "ClubAAA", "2019-20"),
         new PlayerSeasonStat(2, playerGameStats2, seasonId, clubId, 2, 1, 1, 0, 1, 180, 0, 0, "PlayerAAAB", "ClubAAA", "2019-20")
     );
-    return expected;
   }
 
   @Test
@@ -362,15 +370,14 @@ class FootballIntegrationTest {
     //    (player_id, club_id, number, starter, goals, assists, minutes, yellow_cards, red_cards, game_id)
 //    1:(1, 1, 1, 1, 1, 0, 90, 0, 0, 1),
 //    9:(1, 1, 1, 1, 0, 0, 90, 0, 0, 3),
-    PlayerGameStat playerGameStat11 = new PlayerGameStat(1, 1, 1, 1, true, 1, 0, 90, 0, 0, 1, LocalDate.of(2019, 8, 1), "ClubAAB", "○2-1");
-    PlayerGameStat playerGameStat12 = new PlayerGameStat(9, 1, 1, 1, true, 0, 0, 90, 0, 0, 3, LocalDate.of(2019, 8, 2), "ClubAAB", "△2-2");
+    PlayerGameStat playerGameStat11 = new PlayerGameStat(1, playerId, 1, 1, true, 1, 0, 90, 0, 0, 1, LocalDate.of(2019, 8, 1), "ClubAAB", "○2-1");
+    PlayerGameStat playerGameStat12 = new PlayerGameStat(9, playerId, 1, 1, true, 0, 0, 90, 0, 0, 3, LocalDate.of(2019, 8, 2), "ClubAAB", "△2-2");
 
     List<PlayerGameStat> playerGameStats1 = List.of(playerGameStat11, playerGameStat12);
 
-    List<PlayerSeasonStat> expected = List.of(
-        new PlayerSeasonStat(1, playerGameStats1, seasonId, 1, 2, 2, 0, 1, 0, 180, 0, 0, "PlayerAAAA", "ClubAAA", "2019-20")
+    return List.of(
+        new PlayerSeasonStat(playerId, playerGameStats1, seasonId, 1, 2, 2, 0, 1, 0, 180, 0, 0, "PlayerAAAA", "ClubAAA", "2019-20")
     );
-    return expected;
   }
 
   @Test
@@ -390,13 +397,13 @@ class FootballIntegrationTest {
     //    (player_id, club_id, number, starter, goals, assists, minutes, yellow_cards, red_cards, game_id)
 //    1:(1, 1, 1, 1, 1, 0, 90, 0, 0, 1),:201920
 //    9:(1, 1, 1, 1, 0, 0, 90, 0, 0, 3),:201920
-    PlayerGameStat playerGameStat11 = new PlayerGameStat(1, 1, 1, 1, true, 1, 0, 90, 0, 0, 1, LocalDate.of(2019, 8, 1), "ClubAAB", "○2-1");
-    PlayerGameStat playerGameStat12 = new PlayerGameStat(9, 1, 1, 1, true, 0, 0, 90, 0, 0, 3, LocalDate.of(2019, 8, 2), "ClubAAB", "△2-2");
+    PlayerGameStat playerGameStat11 = new PlayerGameStat(1, playerId, 1, 1, true, 1, 0, 90, 0, 0, 1, LocalDate.of(2019, 8, 1), "ClubAAB", "○2-1");
+    PlayerGameStat playerGameStat12 = new PlayerGameStat(9, playerId, 1, 1, true, 0, 0, 90, 0, 0, 3, LocalDate.of(2019, 8, 2), "ClubAAB", "△2-2");
 
     List<PlayerGameStat> playerGameStats1 = List.of(playerGameStat11, playerGameStat12);
 
     List<PlayerSeasonStat> playerSeasonStats1 = List.of(
-        new PlayerSeasonStat(1, playerGameStats1, 201920, 1, 2, 2, 0, 1, 0, 180, 0, 0, "PlayerAAAA", "ClubAAA", "2019-20")
+        new PlayerSeasonStat(playerId, playerGameStats1, 201920, 1, 2, 2, 0, 1, 0, 180, 0, 0, "PlayerAAAA", "ClubAAA", "2019-20")
     );
 
     //    13:(1, 1, 1, 0, 0, 0, 90, 0, 0, 4),:202021
@@ -435,19 +442,100 @@ class FootballIntegrationTest {
   }
 
   @Test
-  void registerCountry() {
+  @DisplayName("国が登録できること")
+  void registerCountry() throws Exception {
+    String requestParam = "CountryC";
+
+    Country expected = new Country(3, requestParam);
+    String expectedJson = objectMapper.writeValueAsString(expected);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/country")
+        .param("name", requestParam))
+        .andExpect(status().isOk())
+        .andExpect(content().json(expectedJson));
   }
 
   @Test
-  void registerLeague() {
+  @DisplayName("リーグが登録できること")
+  void registerLeague() throws Exception {
+    String requestBody = """
+        {
+          "name": "LeagueAC",
+          "countryId": 1
+        }
+        """;
+
+    League expected = new League(5, 1, "LeagueAC");
+    String expectedJson = objectMapper.writeValueAsString(expected);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/league")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(content().json(expectedJson));
   }
 
   @Test
-  void registerClub() {
+  @DisplayName("クラブが登録できること")
+  void registerClub() throws Exception {
+    String requestBody = """
+        {
+          "name": "ClubAAC",
+          "leagueId": 1
+        }
+        """;
+
+    Club expected = new Club(9, 1, "ClubAAC");
+    String expectedJson = objectMapper.writeValueAsString(expected);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/club")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(content().json(expectedJson));
   }
 
   @Test
-  void registerPlayer() {
+  @DisplayName("選手が登録できること")
+  void registerPlayer() throws Exception {
+    String requestBody = """
+        {
+          "name": "PlayerAAAC",
+          "clubId": 1,
+          "number": 3
+        }
+        """;
+
+    Player expected = new Player(17, 1, "PlayerAAAC", 3);
+    String expectedJson = objectMapper.writeValueAsString(expected);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/player")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(content().json(expectedJson));
+  }
+
+  @Test
+  @DisplayName("選手の登録_重複する背番号の場合はFootballExceptionが発生すること")
+  void registerPlayerWithDuplicateNumber() throws Exception {
+    String requestBody = """
+        {
+          "name": "PlayerAAAC",
+          "clubId": 1,
+          "number": 1
+        }
+        """;
+
+    String expectedMessage = "Player number is already used in Club";
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/player")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> assertThrows(FootballException.class, () -> {
+          throw new FootballException(expectedMessage);
+        }));
   }
 
   @Test
@@ -455,7 +543,25 @@ class FootballIntegrationTest {
   }
 
   @Test
-  void registerSeason() {
+  @DisplayName("シーズンが登録できること")
+  void registerSeason() throws Exception {
+    String requestBody = """
+        {
+          "name": "2021-22",
+          "startDate": "2021-07-01",
+          "endDate": "2022-06-30"
+        }
+        """;
+
+    Season expected = new Season(202122, "2021-22", LocalDate.of(2021, 7, 1),
+        LocalDate.of(2022, 6, 30), true);
+    String expectedJson = objectMapper.writeValueAsString(expected);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/season")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isOk())
+        .andExpect(content().json(expectedJson));
   }
 
   @Test
