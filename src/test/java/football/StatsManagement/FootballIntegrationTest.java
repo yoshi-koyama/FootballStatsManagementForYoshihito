@@ -17,6 +17,7 @@ import football.StatsManagement.model.data.Season;
 import football.StatsManagement.model.domain.ClubForStanding;
 import football.StatsManagement.model.domain.PlayerSeasonStat;
 import football.StatsManagement.model.domain.Standing;
+import football.StatsManagement.model.domain.json.GameResultForJson;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -538,9 +539,11 @@ class FootballIntegrationTest {
         }));
   }
 
-  @Test
-  void registerGameResult() {
-  }
+//  @Test
+//  @DisplayName("試合結果が登録できること")
+//  void registerGameResult() throws Exception {
+//    GameResultForJson gameResultForJson = new GameResultForJson(2, 1, 3, 3, 1,  LocalDate.of(2020, 8, 10), 202021);
+//  }
 
   @Test
   @DisplayName("シーズンが登録できること")
@@ -562,6 +565,40 @@ class FootballIntegrationTest {
         .content(requestBody))
         .andExpect(status().isOk())
         .andExpect(content().json(expectedJson));
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      // startDateからendDateが366日以内か確認
+      "2023-24, 2023-07-01, 2024-07-01,'Season period is less than or equal to 366 days'",
+      // シーズン名が適正であるか確認（2024-25, 1999-00のような形式）
+      "'202425', '2024-07-01', '2025-06-30', 'Season name should be in the format of ''yyyy-yy'''",
+      // シーズン名の最初の4文字がstartDateの年と一致するか確認
+      "2021-22, 2020-07-01, 2021-06-30, 'Season name should start with the year of start date'",
+      // シーズン名の数字が適切であるか（連続した2年を示しているか）確認
+      "2021-23, 2021-07-01, 2022-06-30, 'Year in season name is not correct'",
+      // 既存のシーズンと名前が重複しないか確認
+      "2020-21, 2020-07-01, 2021-06-30, 'Season name is already used'",
+      // 既存のシーズンと期間が重複しないか確認
+      "2021-22, 2021-06-01, 2022-06-30, 'Season period is already used'"
+  })
+  @DisplayName("シーズンの登録_サービス内で例外処理を発生させるパターン")
+  void registerSeasonWithExceptionInService(String name, LocalDate startDate, LocalDate endDate, String errorMessage) throws Exception {
+    String requestBody = """
+        {
+          "name": "%s",
+          "startDate": "%s",
+          "endDate": "%s"
+        }
+        """.formatted(name, startDate, endDate);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/season")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> assertThrows(FootballException.class, () -> {
+          throw new FootballException(errorMessage);
+        }));
   }
 
   @Test
