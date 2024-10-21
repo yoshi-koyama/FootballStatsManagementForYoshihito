@@ -61,8 +61,7 @@ public class PlayerGameStat {
     this.gameId = gameId;
   }
 
-  public void setGameInfo(int gameId, int clubId, int number) {
-    this.gameId = gameId;
+  public void setPlayerInfo(int clubId, int number) {
     this.clubId = clubId;
     this.number = number;
   }
