@@ -19,10 +19,8 @@ import football.StatsManagement.model.domain.json.SeasonForJson;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,7 +80,8 @@ class FootballRepositoryTest {
   void insertPlayerGameStat() {
     PlayerGameStatForJson playerGameStatForJson = new PlayerGameStatForJson(1, false, 1, 1, 1, 1, 1);
     PlayerGameStat playerGameStat = new PlayerGameStat(playerGameStatForJson);
-    playerGameStat.setGameInfo(1, 1, 1);
+    playerGameStat.setPlayerInfo(1, 1);
+    playerGameStat.setGameId(1);
     int beforeCount = sut.selectPlayerGameStats().size();
     sut.insertPlayerGameStat(playerGameStat);
     int afterCount = sut.selectPlayerGameStats().size();
@@ -152,7 +151,8 @@ class FootballRepositoryTest {
   void selectPlayerGameStat() {
     Optional<PlayerGameStat> actual = sut.selectPlayerGameStat(1);
     PlayerGameStat expected = new PlayerGameStat(1, 1, 1, 1,  true, 1, 0, 90, 0, 0, 1,null, null, null);
-    expected.setGameInfo(1, 1, 1);
+    expected.setPlayerInfo(1, 1);
+    expected.setGameId(1);
     Optional<PlayerGameStat> expectedOptional = Optional.of(expected);
     assertEquals(expectedOptional, actual);
   }
