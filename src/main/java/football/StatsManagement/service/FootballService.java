@@ -100,15 +100,19 @@ public class FootballService {
    */
   @Transactional
   public void registerSeason(Season season) throws FootballException {
-    // startDateがendDateより後になっていないか確認
-    if (season.getStartDate().isAfter(season.getEndDate())) {
-      throw new FootballException("Start date should be before end date");
+    // startDateからendDateが366日以内か確認
+    if (season.getStartDate().plusDays(365).isBefore(season.getEndDate())) {
+      throw new FootballException("Season period is less than or equal to 366 days");
     }
     // シーズン名が適正であるか確認（2024-25, 1999-00のような形式）
     if (!season.getName().matches("\\d{4}-\\d{2}")) {
       throw new FootballException("Season name should be in the format of 'yyyy-yy'");
     }
-    // シーズン名の数字が適切であるか確認
+    // シーズン名の最初の4文字がstartDateの年と一致するか確認
+    if (!season.getName().startsWith(String.valueOf(season.getStartDate().getYear()))) {
+      throw new FootballException("Season name should start with the year of start date");
+    }
+    // シーズン名の数字が適切であるか（連続した2年を示しているか）確認
     confirmSeasonNameNumber(season.getName());
     // 既存のシーズンと重複しないか確認
     List<Season> seasons = getSeasons();
