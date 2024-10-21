@@ -35,7 +35,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -126,15 +125,15 @@ class FootballServiceTest {
   }
 
   @Test
-  @DisplayName("シーズン登録で、開始日と終了日が逆転している場合に適切に例外処理されること")
-  void registerSeason_withReverseDate() {
-    SeasonForJson seasonForJson = new SeasonForJson("2000-01", LocalDate.of(2001, 7, 1), LocalDate.of(2000, 6, 30));
+  @DisplayName("シーズン登録で、期間が366日よりも長い場合に適切に例外処理されること_閏年の場合")
+  void registerSeason_withTooLongPeriodInLeapYear() {
+    SeasonForJson seasonForJson = new SeasonForJson("1999-00", LocalDate.of(1999, 7, 1), LocalDate.of(2000, 7, 1));
     Season season = new Season(seasonForJson);
     // 例外が投げられることを確認し、メッセージもチェック
     FootballException thrown = assertThrows(FootballException.class, () -> sut.registerSeason(season));
 
     // 期待される例外メッセージを確認
-    assertEquals("Start date should be before end date", thrown.getMessage());
+    assertEquals("Season period is less than or equal to 366 days", thrown.getMessage());
   }
 
   @Test
@@ -150,8 +149,20 @@ class FootballServiceTest {
   }
 
   @Test
-  @DisplayName("シーズン登録で、シーズン名の数字が不正である場合に適切に例外処理されること")
-  void registerSeason_withInvalidYear() {
+  @DisplayName("シーズン登録で、シーズン名の最初の4文字がstartDateの年と一致しない場合に適切に例外処理されること")
+  void registerSeason_withInvalidYearInName() {
+    SeasonForJson seasonForJson = new SeasonForJson("2001-02", LocalDate.of(2000, 7, 1), LocalDate.of(2001, 6, 30));
+    Season season = new Season(seasonForJson);
+    // 例外が投げられることを確認し、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerSeason(season));
+
+    // 期待される例外メッセージを確認
+    assertEquals("Season name should start with the year of start date", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("シーズン登録で、シーズン名の数字が連続した2年でない場合に適切に例外処理されること")
+  void registerSeason_withNonconsecutiveYearName() {
     SeasonForJson seasonForJson = new SeasonForJson("2000-02", LocalDate.of(2000, 7, 1), LocalDate.of(2001, 6, 30));
     Season season = new Season(seasonForJson);
     // 例外が投げられることを確認し、メッセージもチェック
@@ -162,6 +173,19 @@ class FootballServiceTest {
   }
 
   @Test
+  @DisplayName("シーズン登録で、シーズン名の数字が連続した2年でない場合に適切に例外処理されること_199900のようなケース")
+  void registerSeason_withNonconsecutiveYearNameLike199900() {
+    SeasonForJson seasonForJson = new SeasonForJson("1999-01", LocalDate.of(1999, 7, 1), LocalDate.of(2000, 6, 30));
+    Season season = new Season(seasonForJson);
+    // 例外が投げられることを確認し、メッセージもチェック
+    FootballException thrown = assertThrows(FootballException.class, () -> sut.registerSeason(season));
+
+    // 期待される例外メッセージを確認
+    assertEquals("Year in season name is not correct", thrown.getMessage());
+  }
+
+  @Test
+  @DisplayName("シーズン登録で、既に登録されているものと名前が重複している場合に適切に例外処理されること")
   void registerSeason_withDuplicatedName() {
     SeasonForJson seasonForJson = new SeasonForJson("2000-01", LocalDate.of(2000, 7, 1), LocalDate.of(2001, 6, 30));
     Season season = new Season(seasonForJson);
