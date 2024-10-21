@@ -222,7 +222,9 @@ class FootballIntegrationTest {
         new Club(5, 3, "ClubBAA"),
         new Club(6, 3, "ClubBAB"),
         new Club(7, 4, "ClubBBA"),
-        new Club(8, 4, "ClubBBB")
+        new Club(8, 4, "ClubBBB"),
+        new Club(9, 4, "ClubBBC"),
+        new Club(10, 4, "ClubBBD")
     );
     String expectedJson = objectMapper.writeValueAsString(expected);
 
@@ -486,7 +488,7 @@ class FootballIntegrationTest {
         }
         """;
 
-    Club expected = new Club(9, 1, "ClubAAC");
+    Club expected = new Club(11, 1, "ClubAAC");
     String expectedJson = objectMapper.writeValueAsString(expected);
 
     mockMvc.perform(MockMvcRequestBuilders.post("/club")
@@ -507,7 +509,7 @@ class FootballIntegrationTest {
         }
         """;
 
-    Player expected = new Player(17, 1, "PlayerAAAC", 3);
+    Player expected = new Player(47, 1, "PlayerAAAC", 3);
     String expectedJson = objectMapper.writeValueAsString(expected);
 
     mockMvc.perform(MockMvcRequestBuilders.post("/player")
@@ -539,11 +541,11 @@ class FootballIntegrationTest {
         }));
   }
 
-//  @Test
-//  @DisplayName("試合結果が登録できること")
-//  void registerGameResult() throws Exception {
-//    GameResultForJson gameResultForJson = new GameResultForJson(2, 1, 3, 3, 1,  LocalDate.of(2020, 8, 10), 202021);
-//  }
+  @Test
+  @DisplayName("試合結果が登録できること")
+  void registerGameResult() throws Exception {
+
+  }
 
   @Test
   @DisplayName("シーズンが登録できること")

@@ -272,7 +272,9 @@ class FootballRepositoryTest {
         new Club(5, 3, "ClubBAA"),
         new Club(6, 3, "ClubBAB"),
         new Club(7, 4, "ClubBBA"),
-        new Club(8, 4, "ClubBBB")
+        new Club(8, 4, "ClubBBB"),
+        new Club(9, 4, "ClubBBC"),
+        new Club(10, 4, "ClubBBD")
     );
     assertThat(actual.size()).isEqualTo(expected.size());
     assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
@@ -298,7 +300,37 @@ class FootballRepositoryTest {
         new Player(13, 7, "PlayerBBAA", 1),
         new Player(14, 7, "PlayerBBAB", 2),
         new Player(15, 8, "PlayerBBBA", 1),
-        new Player(16, 8, "PlayerBBBB", 2)
+        new Player(16, 8, "PlayerBBBB", 2),
+        new Player(17, 9, "PlayerBBCA", 1),
+        new Player(18, 9, "PlayerBBCB", 2),
+        new Player(19, 9, "PlayerBBCC", 3),
+        new Player(20, 9, "PlayerBBCD", 4),
+        new Player(21, 9, "PlayerBBCE", 5),
+        new Player(22, 9, "PlayerBBCF", 6),
+        new Player(23, 9, "PlayerBBCG", 7),
+        new Player(24, 9, "PlayerBBCH", 8),
+        new Player(25, 9, "PlayerBBCI", 9),
+        new Player(26, 9, "PlayerBBCJ", 10),
+        new Player(27, 9, "PlayerBBCK", 11),
+        new Player(28, 9, "PlayerBBCL", 12),
+        new Player(29, 9, "PlayerBBCM", 13),
+        new Player(30, 9, "PlayerBBCN", 14),
+        new Player(31, 9, "PlayerBBCO", 15),
+        new Player(32, 10, "PlayerBBDA", 1),
+        new Player(33, 10, "PlayerBBDB", 2),
+        new Player(34, 10, "PlayerBBDC", 3),
+        new Player(35, 10, "PlayerBBDD", 4),
+        new Player(36, 10, "PlayerBBDE", 5),
+        new Player(37, 10, "PlayerBBDF", 6),
+        new Player(38, 10, "PlayerBBDG", 7),
+        new Player(39, 10, "PlayerBBDH", 8),
+        new Player(40, 10, "PlayerBBDI", 9),
+        new Player(41, 10, "PlayerBBDJ", 10),
+        new Player(42, 10, "PlayerBBDK", 11),
+        new Player(43, 10, "PlayerBBDL", 12),
+        new Player(44, 10, "PlayerBBDM", 13),
+        new Player(45, 10, "PlayerBBDN", 14),
+        new Player(46, 10, "PlayerBBDO", 15)
     );
     assertThat(actual.size()).isEqualTo(expected.size());
     assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
