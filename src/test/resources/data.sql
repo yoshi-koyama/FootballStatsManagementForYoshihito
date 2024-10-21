@@ -16,7 +16,10 @@ INSERT INTO clubs (name, league_id) VALUES
   ('ClubBAA', 3),
   ('ClubBAB', 3),
   ('ClubBBA', 4),
-  ('ClubBBB', 4);
+  ('ClubBBB', 4),
+--  以下、試合結果登録の結合テストのために追加
+  ('ClubBBC', 4),
+  ('ClubBBD', 4);
 
 INSERT INTO players (name, club_id, number) VALUES
   ('PlayerAAAA', 1, 1),
@@ -34,7 +37,39 @@ INSERT INTO players (name, club_id, number) VALUES
   ('PlayerBBAA', 7, 1),
   ('PlayerBBAB', 7, 2),
   ('PlayerBBBA', 8, 1),
-  ('PlayerBBBB', 8, 2);
+  ('PlayerBBBB', 8, 2),
+--  以下、試合結果登録の結合テストのために追加（2クラブ15人ずつ）
+  ('PlayerBBCA', 9, 1),
+  ('PlayerBBCB', 9, 2),
+  ('PlayerBBCC', 9, 3),
+  ('PlayerBBCD', 9, 4),
+  ('PlayerBBCE', 9, 5),
+  ('PlayerBBCF', 9, 6),
+  ('PlayerBBCG', 9, 7),
+  ('PlayerBBCH', 9, 8),
+  ('PlayerBBCI', 9, 9),
+  ('PlayerBBCJ', 9, 10),
+  ('PlayerBBCK', 9, 11),
+  ('PlayerBBCL', 9, 12),
+  ('PlayerBBCM', 9, 13),
+  ('PlayerBBCN', 9, 14),
+  ('PlayerBBCO', 9, 15),
+  ('PlayerBBDA', 10, 1),
+  ('PlayerBBDB', 10, 2),
+  ('PlayerBBDC', 10, 3),
+  ('PlayerBBDD', 10, 4),
+  ('PlayerBBDE', 10, 5),
+  ('PlayerBBDF', 10, 6),
+  ('PlayerBBDG', 10, 7),
+  ('PlayerBBDH', 10, 8),
+  ('PlayerBBDI', 10, 9),
+  ('PlayerBBDJ', 10, 10),
+  ('PlayerBBDK', 10, 11),
+  ('PlayerBBDL', 10, 12),
+  ('PlayerBBDM', 10, 13),
+  ('PlayerBBDN', 10, 14),
+  ('PlayerBBDO', 10, 15);
+
 
 INSERT INTO seasons (id, name, start_date, end_date, current) VALUES
   (201920, '2019-20', '2019-07-01', '2020-06-30', 0),

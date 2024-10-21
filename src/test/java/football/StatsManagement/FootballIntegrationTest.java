@@ -539,11 +539,11 @@ class FootballIntegrationTest {
         }));
   }
 
-//  @Test
-//  @DisplayName("試合結果が登録できること")
-//  void registerGameResult() throws Exception {
-//    GameResultForJson gameResultForJson = new GameResultForJson(2, 1, 3, 3, 1,  LocalDate.of(2020, 8, 10), 202021);
-//  }
+  @Test
+  @DisplayName("試合結果が登録できること")
+  void registerGameResult() throws Exception {
+
+  }
 
   @Test
   @DisplayName("シーズンが登録できること")
