@@ -4,6 +4,7 @@ import football.StatsManagement.exception.ResourceNotFoundException;
 import football.StatsManagement.service.FootballService;
 import football.StatsManagement.model.data.Club;
 import football.StatsManagement.utils.RankingUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -48,11 +49,10 @@ public final class Standing {
     }
 
     public static String initialStanding3() {
-      return "initialStanding3";
+        return "initialStanding3";
     }
 
-
-  private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) {
+    private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) {
         List<ClubForStanding> clubForStandings = clubs.stream()
           .map(club -> ClubForStanding.initialClubForStanding(seasonId, club, service))
           .toList();
