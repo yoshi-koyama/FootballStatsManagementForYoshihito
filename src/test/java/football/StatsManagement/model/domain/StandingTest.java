@@ -64,10 +64,10 @@ class StandingTest {
       mockedClubForStanding.when(() -> ClubForStanding.initialClubForStanding(seasonId, club3, service)).thenReturn(clubForStandings.get(2));
       mockedRankingUtils.when(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings)).thenReturn(rankedClubForStandings);
 
-      System.out.println("initialStanding2を開始");
-      var st = Standing.initialStanding2();
-      System.out.println(st.leagueName());
-      System.out.println("initialStanding2を終了");
+//      System.out.println("initialStanding2を開始");
+//      var st = Standing.initialStanding2();
+//      System.out.println(st.leagueName());
+//      System.out.println("initialStanding2を終了");
 
       System.out.println("initialStanding3を開始");
       var s = Standing.initialStanding3();
