@@ -526,6 +526,11 @@ public class FootballService {
       playerGameStat.setGameId(gameResult.getId());
       registerPlayerGameStat(playerGameStat);
     }
+
+    // 更新された情報を gameResultWithPlayerStats に設定
+    gameResultWithPlayerStats.setGameResult(gameResult);
+    gameResultWithPlayerStats.setHomePlayerGameStats(homeClubStats);
+    gameResultWithPlayerStats.setAwayPlayerGameStats(awayClubStats);
   }
 
   /**
