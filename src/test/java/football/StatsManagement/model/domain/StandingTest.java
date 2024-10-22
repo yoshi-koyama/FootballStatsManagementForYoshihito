@@ -64,6 +64,10 @@ class StandingTest {
       mockedClubForStanding.when(() -> ClubForStanding.initialClubForStanding(seasonId, club3, service)).thenReturn(clubForStandings.get(2));
       mockedRankingUtils.when(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings)).thenReturn(rankedClubForStandings);
 
+      System.out.println("initialStanding2を開始");
+      Standing.initialStanding2();
+      System.out.println("initialStanding2を終了");
+
       // Act
       System.out.println("initialStandingを開始");
       Standing actual = Standing.initialStanding(leagueId, seasonId, service);

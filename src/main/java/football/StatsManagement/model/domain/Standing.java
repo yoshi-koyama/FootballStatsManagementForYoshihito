@@ -29,6 +29,11 @@ public record Standing(
     return new Standing(leagueId, seasonId, rankedClubForStandings, leagueName, seasonName);
   }
 
+  public static Standing initialStanding2() {
+    System.out.println("initialStanding2内の処理を開始");
+    return null;
+  }
+
   private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) {
     List<ClubForStanding> clubForStandings = clubs.stream()
         .map(club -> ClubForStanding.initialClubForStanding(seasonId, club, service))
