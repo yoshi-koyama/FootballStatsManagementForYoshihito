@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import football.StatsManagement.exception.FootballException;
 import football.StatsManagement.model.data.Club;
@@ -15,9 +16,13 @@ import football.StatsManagement.model.data.Player;
 import football.StatsManagement.model.data.PlayerGameStat;
 import football.StatsManagement.model.data.Season;
 import football.StatsManagement.model.domain.ClubForStanding;
+import football.StatsManagement.model.domain.GameResultWithPlayerStats;
 import football.StatsManagement.model.domain.PlayerSeasonStat;
 import football.StatsManagement.model.domain.Standing;
 import football.StatsManagement.model.domain.json.GameResultForJson;
+import football.StatsManagement.model.domain.json.GameResultWithPlayerStatsForJson;
+import football.StatsManagement.model.domain.json.PlayerGameStatForJson;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +37,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.spring6.expression.Mvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -541,11 +548,211 @@ class FootballIntegrationTest {
         }));
   }
 
-  @Test
+  @ParameterizedTest
+  @CsvSource({
+      "2020-08-01,  4, 9, 10, 30, 0, 0, false, 30, 45, 0, 0, false, 25"
+  })
   @DisplayName("試合結果が登録できること")
-  void registerGameResult() throws Exception {
+  void registerGameResult(
+      LocalDate gameDate, int leagueId, int homeClubId, int awayClubId,
+      int homeTriggerPlayerId, int homeTriggerPlayerGoals, int homeTriggerPlayerAssists,
+      boolean homeTriggerPlayerStarter, int homeTriggerPlayerMinutes,
+      int awayTriggerPlayerId, int awayTriggerPlayerGoals, int awayTriggerPlayerAssists,
+      boolean awayTriggerPlayerStarter, int awayTriggerPlayerMinutes) throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(homeClubId, awayClubId, 3, 1, leagueId, gameDate, 202021);
+    List<PlayerGameStatForJson> homeClubPlayerGameStatsForJson = List.of(
+        new PlayerGameStatForJson(17, true, 1, 2, 90, 0, 0),
+        new PlayerGameStatForJson(18, true, 1, 1, 90, 0, 0),
+        new PlayerGameStatForJson(19, true, 1, 0, 90, 0, 0),
+        new PlayerGameStatForJson(20, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(21, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(22, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(23, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(24, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(25, true, 0, 0, 80, 0, 0),
+        new PlayerGameStatForJson(26, true, 0, 0, 70, 0, 0),
+        new PlayerGameStatForJson(27, true, 0, 0, 60, 0, 0),
+        new PlayerGameStatForJson(28, false, 0, 0, 10, 0, 0),
+        new PlayerGameStatForJson(29, false, 0, 0, 20, 0, 0),
+        new PlayerGameStatForJson(homeTriggerPlayerId, homeTriggerPlayerStarter, homeTriggerPlayerGoals, homeTriggerPlayerAssists, homeTriggerPlayerMinutes, 0, 0)
+    );
+    List<PlayerGameStatForJson> awayClubPlayerGameStatsForJson = List.of(
+        new PlayerGameStatForJson(32, true, 1, 0, 90, 0, 0),
+        new PlayerGameStatForJson(33, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(34, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(35, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(36, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(37, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(38, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(39, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(40, true, 0, 0, 85, 0, 0),
+        new PlayerGameStatForJson(41, true, 0, 0, 75, 0, 0),
+        new PlayerGameStatForJson(42, true, 0, 0, 65, 0, 0),
+        new PlayerGameStatForJson(43, false, 0, 0, 5, 0, 0),
+        new PlayerGameStatForJson(44, false, 0, 0, 15, 0, 0),
+        new PlayerGameStatForJson(awayTriggerPlayerId, awayTriggerPlayerStarter, awayTriggerPlayerGoals, awayTriggerPlayerAssists, awayTriggerPlayerMinutes, 0, 0)
+    );
+
+    GameResultWithPlayerStatsForJson gameResultWithPlayerStatsForJson = new GameResultWithPlayerStatsForJson(
+        gameResultForJson, homeClubPlayerGameStatsForJson, awayClubPlayerGameStatsForJson);
+    String requestBody = objectMapper.writeValueAsString(gameResultWithPlayerStatsForJson);
+
+    GameResult expectedGameResult = new GameResult(7, homeClubId, awayClubId, 3, 1, homeClubId, leagueId, gameDate, 202021);
+    List<PlayerGameStat> expectedHomePlayerGameStats = List.of(
+        new PlayerGameStat(25, 17, 9, 1, true, 1, 2, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(26, 18, 9, 2, true, 1, 1, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(27, 19, 9, 3, true, 1, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(28, 20, 9, 4, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(29, 21, 9, 5, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(30, 22, 9, 6, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(31, 23, 9, 7, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(32, 24, 9, 8, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(33, 25, 9, 9, true, 0, 0, 80, 0, 0, 7, null, null, null),
+        new PlayerGameStat(34, 26, 9, 10, true, 0, 0, 70, 0, 0, 7, null, null, null),
+        new PlayerGameStat(35, 27, 9, 11, true, 0, 0, 60, 0, 0, 7, null, null, null),
+        new PlayerGameStat(36, 28, 9, 12, false, 0, 0, 10, 0, 0, 7, null, null, null),
+        new PlayerGameStat(37, 29, 9, 13, false, 0, 0, 20, 0, 0, 7, null, null, null),
+        new PlayerGameStat(38, homeTriggerPlayerId, 9, 14, homeTriggerPlayerStarter, homeTriggerPlayerGoals, homeTriggerPlayerAssists, homeTriggerPlayerMinutes, 0, 0, 7, null, null, null)
+    );
+    List<PlayerGameStat> expectedAwayPlayerGameStats = List.of(
+        new PlayerGameStat(39, 32, 10, 1, true, 1, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(40, 33, 10, 2, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(41, 34, 10, 3, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(42, 35, 10, 4, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(43, 36, 10, 5, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(44, 37, 10, 6, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(45, 38, 10, 7, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(46, 39, 10, 8, true, 0, 0, 90, 0, 0, 7, null, null, null),
+        new PlayerGameStat(47, 40, 10, 9, true, 0, 0, 85, 0, 0, 7, null, null, null),
+        new PlayerGameStat(48, 41, 10, 10, true, 0, 0, 75, 0, 0, 7, null, null, null),
+        new PlayerGameStat(49, 42, 10, 11, true, 0, 0, 65, 0, 0, 7, null, null, null),
+        new PlayerGameStat(50, 43, 10, 12, false, 0, 0, 5, 0, 0, 7, null, null, null),
+        new PlayerGameStat(51, 44, 10, 13, false, 0, 0, 15, 0, 0, 7, null, null, null),
+        new PlayerGameStat(52, awayTriggerPlayerId, 10, 14, awayTriggerPlayerStarter, awayTriggerPlayerGoals, awayTriggerPlayerAssists, awayTriggerPlayerMinutes, 0, 0, 7, null, null, null)
+    );
+
+    GameResultWithPlayerStats expected = new GameResultWithPlayerStats(expectedGameResult, expectedHomePlayerGameStats, expectedAwayPlayerGameStats);
+    String expectedJson = objectMapper.writeValueAsString(expected);
+
+    // 検証：andExpect(content().json(expectedJson))で比較に失敗するため、独自に比較メソッドを作成
+
+    MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/game-result")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    String actualJson = result.getResponse().getContentAsString();
+    compareJson(expectedJson, actualJson);
 
   }
+
+  public void compareJson(String expectedJson, String actualJson) throws Exception {
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    JsonNode expectedNode = objectMapper.readTree(expectedJson);
+    JsonNode actualNode = objectMapper.readTree(actualJson);
+
+    // ここで比較ロジックを実装
+    if (!expectedNode.equals(actualNode)) {
+      // 異なる場合の処理
+      System.out.println("JSONs are not identical. Differences:");
+      logDifferences(expectedNode, actualNode);
+      // 例外をスローしてテストを失敗させる
+      throw new AssertionError("Expected and actual JSON do not match.");
+    } else {
+      System.out.println("JSONs are semantically identical.");
+    }
+  }
+
+  // 差異をログに出力するメソッド
+  private void logDifferences(JsonNode expectedNode, JsonNode actualNode) {
+    expectedNode.fieldNames().forEachRemaining(field -> {
+      if (!actualNode.has(field)) {
+        System.out.println("Missing field in actual JSON: " + field);
+      } else if (!expectedNode.get(field).equals(actualNode.get(field))) {
+        System.out.println("Field '" + field + "' differs. Expected: "
+            + expectedNode.get(field) + ", Actual: " + actualNode.get(field));
+      }
+    });
+  }
+
+  @ParameterizedTest
+  // テストケースのパラメータを指定（下から作成）
+  @CsvSource({
+      "2020-08-01,  4, 9, 10, 30, 0, 0, false, 30, 45, 0, 0, false, 24, 'Away minutes is not correct'",
+      "2020-08-01,  4, 9, 10, 30, 0, 0, false, 29, 45, 0, 0, false, 24, 'Home minutes is not correct'",
+      "2020-08-01,  4, 9, 10, 30, 0, 0, false, 29, 45, 0, 0,  true, 24, 'Away starter count is not correct'",
+      "2020-08-01,  4, 9, 10, 30, 0, 0,  true, 29, 45, 0, 0,  true, 24, 'Home starter count is not correct'",
+      "2020-08-01,  4, 9, 10, 30, 0, 0,  true, 29, 45, 0, 2,  true, 24, 'Away assists is more than away score'",
+      "2020-08-01,  4, 9, 10, 30, 0, 1,  true, 29, 45, 0, 2,  true, 24, 'Home assists is more than home score'",
+      "2020-08-01,  4, 9, 10, 30, 0, 1,  true, 29, 45, 1, 2,  true, 24, 'Away score is not correct'",
+      "2020-08-01,  4, 9, 10, 30, 1, 1,  true, 29, 45, 1, 2,  true, 24, 'Home score is not correct'",
+      "2020-08-01,  4, 9, 10, 30, 1, 1,  true, 29, 44, 1, 2,  true, 24, 'Away club has duplicate players'",
+      "2020-08-01,  4, 9, 10, 29, 1, 1,  true, 29, 44, 1, 2,  true, 24, 'Home club has duplicate players'",
+      "2020-08-01,  4, 9, 10, 29, 1, 1,  true, 29,  2, 1, 2,  true, 24, 'Away club and player are not matched'",
+      "2020-08-01,  4, 9, 10,  1, 1, 1,  true, 29,  2, 1, 2,  true, 24, 'Home club and player are not matched'",
+      "2020-08-01,  4, 9,  2,  1, 1, 1,  true, 29,  2, 1, 2,  true, 24, 'Away club is not in the league'",
+      "2020-08-01,  4, 1,  2,  1, 1, 1,  true, 29,  2, 1, 2,  true, 24, 'Home club is not in the league'",
+      "2020-08-01, 99, 1,  2,  1, 1, 1,  true, 29,  2, 1, 2,  true, 24, 'League not found'",
+      "2019-08-01, 99, 1,  2,  1, 1, 1,  true, 29,  2, 1, 2,  true, 24, 'Game date is not in the current season'"
+  })
+  @DisplayName("試合結果の登録_サービス内で例外処理を発生させるパターン")
+  void registerGameResultWithExceptionInService(
+      LocalDate gameDate, int leagueId, int homeClubId, int awayClubId,
+      int homeTriggerPlayerId, int homeTriggerPlayerGoals, int homeTriggerPlayerAssists,
+      boolean homeTriggerPlayerStarter, int homeTriggerPlayerMinutes,
+      int awayTriggerPlayerId, int awayTriggerPlayerGoals, int awayTriggerPlayerAssists,
+      boolean awayTriggerPlayerStarter, int awayTriggerPlayerMinutes, String expectedMessage) throws Exception {
+    GameResultForJson gameResultForJson = new GameResultForJson(homeClubId, awayClubId, 3, 1, leagueId, gameDate, 202021);
+    List<PlayerGameStatForJson> homeClubPlayerGameStatsForJson = List.of(
+        new PlayerGameStatForJson(17, true, 1, 2, 90, 0, 0),
+        new PlayerGameStatForJson(18, true, 1, 1, 90, 0, 0),
+        new PlayerGameStatForJson(19, true, 1, 0, 90, 0, 0),
+        new PlayerGameStatForJson(20, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(21, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(22, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(23, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(24, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(25, true, 0, 0, 80, 0, 0),
+        new PlayerGameStatForJson(26, true, 0, 0, 70, 0, 0),
+        new PlayerGameStatForJson(27, true, 0, 0, 60, 0, 0),
+        new PlayerGameStatForJson(28, false, 0, 0, 10, 0, 0),
+        new PlayerGameStatForJson(29, false, 0, 0, 20, 0, 0),
+        new PlayerGameStatForJson(homeTriggerPlayerId, homeTriggerPlayerStarter, homeTriggerPlayerGoals, homeTriggerPlayerAssists, homeTriggerPlayerMinutes, 0, 0)
+    );
+    List<PlayerGameStatForJson> awayClubPlayerGameStatsForJson = List.of(
+        new PlayerGameStatForJson(32, true, 1, 0, 90, 0, 0),
+        new PlayerGameStatForJson(33, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(34, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(35, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(36, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(37, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(38, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(39, true, 0, 0, 90, 0, 0),
+        new PlayerGameStatForJson(40, true, 0, 0, 85, 0, 0),
+        new PlayerGameStatForJson(41, true, 0, 0, 75, 0, 0),
+        new PlayerGameStatForJson(42, true, 0, 0, 65, 0, 0),
+        new PlayerGameStatForJson(43, false, 0, 0, 5, 0, 0),
+        new PlayerGameStatForJson(44, false, 0, 0, 15, 0, 0),
+        new PlayerGameStatForJson(awayTriggerPlayerId, awayTriggerPlayerStarter, awayTriggerPlayerGoals, awayTriggerPlayerAssists, awayTriggerPlayerMinutes, 0, 0)
+    );
+
+    GameResultWithPlayerStatsForJson gameResultWithPlayerStatsForJson = new GameResultWithPlayerStatsForJson(
+        gameResultForJson, homeClubPlayerGameStatsForJson, awayClubPlayerGameStatsForJson);
+    String requestBody = objectMapper.writeValueAsString(gameResultWithPlayerStatsForJson);
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/game-result")
+        .contentType("application/json")
+        .content(requestBody))
+        .andExpect(status().isBadRequest())
+        .andExpect(result -> assertThrows(FootballException.class, () -> {
+          throw new FootballException(expectedMessage);
+        }));
+
+  }
+
+
 
   @Test
   @DisplayName("シーズンが登録できること")
