@@ -47,7 +47,12 @@ public final class Standing {
         return new Standing(1, 100001, new ArrayList<>(), "league1", "1000-01");
     }
 
-    private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) {
+    public static String initialStanding3() {
+      return "initialStanding3";
+    }
+
+
+  private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) {
         List<ClubForStanding> clubForStandings = clubs.stream()
           .map(club -> ClubForStanding.initialClubForStanding(seasonId, club, service))
           .toList();
