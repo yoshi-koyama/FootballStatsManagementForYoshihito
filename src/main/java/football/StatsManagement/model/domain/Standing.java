@@ -31,7 +31,7 @@ public record Standing(
 
   public static Standing initialStanding2() {
     System.out.println("initialStanding2内の処理を開始");
-    return null;
+    return new Standing(1, 100001, new ArrayList<>(), "league1", "1000-01");
   }
 
   private static List<ClubForStanding> rankedClubsForStanding(List<Club> clubs, int seasonId, int leagueId, FootballService service) {

@@ -65,7 +65,8 @@ class StandingTest {
       mockedRankingUtils.when(() -> RankingUtils.sortedClubForStandings(leagueId, clubForStandings)).thenReturn(rankedClubForStandings);
 
       System.out.println("initialStanding2を開始");
-      Standing.initialStanding2();
+      var st = Standing.initialStanding2();
+      System.out.println(st);
       System.out.println("initialStanding2を終了");
 
       // Act
