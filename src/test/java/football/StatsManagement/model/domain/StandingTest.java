@@ -74,6 +74,11 @@ class StandingTest {
       System.out.println(s);
       System.out.println("initialStanding3を終了");
 
+      System.out.println("doSomethingを開始");
+      var s2 = Sample.doSomething();
+      System.out.println(s2);
+      System.out.println("doSomethingを終了");
+
       // Act
       System.out.println("initialStandingを開始");
       Standing actual = Standing.initialStanding(leagueId, seasonId, service);
