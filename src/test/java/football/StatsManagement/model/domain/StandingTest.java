@@ -66,7 +66,7 @@ class StandingTest {
 
       System.out.println("initialStanding2を開始");
       var st = Standing.initialStanding2();
-      System.out.println(st);
+      System.out.println(st.leagueName());
       System.out.println("initialStanding2を終了");
 
       // Act
